@@ -17,16 +17,7 @@ air init
 
 
 
-build go and embed react
-    during dev 
-        air for go
-            although it feels slow
-        npm run dev (build)
-            maybe i should run it normally and build at the end
-                but this has to be served from another server
-
-
-
+== i Run the project in two Consols
 cd frontend
 npm run build
 
