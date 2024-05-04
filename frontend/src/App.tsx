@@ -1,6 +1,4 @@
 import { useEffect, useState } from "react";
-import viteLogo from "/vite.svg";
-import "./App.css";
 
 function App() {
   const [data, setData] = useState<string>("");
@@ -16,12 +14,8 @@ function App() {
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-      </div>
-      Data fetched from /api : {data}
+      <h1 className="text-3xl font-bold underline">Home Page</h1>
+      <div>Data fetched from (/api): {data}</div>
     </>
   );
 }

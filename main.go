@@ -20,8 +20,7 @@ func main () {
 
 	// open app url
 	url := "http://localhost:8080/"
-    err := openURL(url)
-    if err != nil {
+    if err := openURL(url); err != nil {
         panic(err)
     }
 
