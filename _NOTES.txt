@@ -28,3 +28,11 @@ air
 npm install -D tailwindcss postcss autoprefixer
 
 npx tailwindcss init -p
+
+
+npm i @material-tailwind/react
+npm i -D @types/react@18.2.42
+
+
+
+
