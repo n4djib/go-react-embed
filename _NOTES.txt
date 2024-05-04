@@ -1,0 +1,34 @@
+go mod init go-react-embed
+
+go get github.com/labstack/echo/v4
+
+npm create vite
+
+package.json
+  "scripts": {
+    "build": "tsc && vite build --watch",
+
+
+go install github.com/cosmtrek/air@latest
+
+air init
+
+
+
+
+
+build go and embed react
+    during dev 
+        air for go
+            although it feels slow
+        npm run dev (build)
+            maybe i should run it normally and build at the end
+                but this has to be served from another server
+
+
+
+cd frontend
+npm run build
+
+air
+
