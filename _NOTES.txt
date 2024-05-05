@@ -1,6 +1,7 @@
 go mod init go-react-embed
 
 go get github.com/labstack/echo/v4
+go get github.com/labstack/echo/v4/middleware@v4.12.0
 
 npm create vite
 
@@ -36,3 +37,15 @@ npm i -D @types/react@18.2.42
 
 
 
+==================
+- how can i watch go files from react
+  to hot reload when working on GO
+- if we are serving (/) from go
+  how can we serve other routes
+  react router
+- 
+- 
+- 
+- 
+- 
+- 
