@@ -7,14 +7,14 @@ npm create vite
 
 package.json
   "scripts": {
-    "build": "tsc && vite build --watch",
+    "dev": "vite dev --port 8081",
+    "build-watch": "tsc && vite build --watch",
+    "build": "tsc && vite build",
 
 
 go install github.com/cosmtrek/air@latest
 
 air init
-
-
 
 
 
@@ -41,18 +41,14 @@ npm install --save-dev @tanstack/router-vite-plugin
 npm install --save-dev @tanstack/router-devtools
 
 
-
+== ENV
+go get github.com/joho/godotenv
 
 
 
 
 
 ==================
-- how can i watch go files from react
-  to hot reload when working on GO
-- if we are serving (/) from go
-  how can we serve other routes
-  react router
 - 
 - 
 - 

@@ -3,10 +3,13 @@ package main
 import (
 	"flag"
 	"go-react-embed/frontend"
+	"log"
 	"net/http"
+	"os"
 	"os/exec"
 	"runtime"
 
+	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -18,13 +21,20 @@ type Data struct {
 // TODO put urls in ENV
 
 func main () {
+	// load .env file
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatalf("Error loading .env file")
+	}
+	
+	// create echo app
 	e := echo.New()
 	
 	// CORS
 	corsConfig := middleware.CORSConfig{
 		AllowOrigins: []string{
-			"http://localhost:8080", 
-			"http://localhost:8081",
+			os.Getenv("APP_URL")+":"+os.Getenv("APP_PORT"), 
+			os.Getenv("APP_URL")+":"+os.Getenv("DEV_PORT"),
 		},
 		// AllowMethods: []string{
 		// 	echo.GET, echo.PUT, echo.POST, echo.DELETE
@@ -42,13 +52,15 @@ func main () {
 	frontend.RegisterHandlers(e)
 
 	// open app url
-	openBrowser()
+	url := os.Getenv("APP_URL")+":"+os.Getenv("APP_PORT")
+	openBrowser(url)
 
 	// start server 
-	e.Logger.Fatal(e.Start(":8080"))
+	e.Logger.Fatal(e.Start(":"+os.Getenv("APP_PORT")))
+	// e.Logger.Fatal(e.Start( ":8080" ))
 }
 
-func openBrowser() {
+func openBrowser(url string) {
 	// grab flag
 	air_flag := flag.Bool("air", false, "detect if run by AIR")
 	flag.Parse()
@@ -57,7 +69,6 @@ func openBrowser() {
 
 	// open app url
 	if !air {
-		url := "http://localhost:8080/"
 		if err := openURL(url); err != nil {
 			panic(err)
 		}
