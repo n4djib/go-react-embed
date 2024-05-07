@@ -2,6 +2,7 @@ package frontend
 
 import (
 	"embed"
+	"fmt"
 	"regexp"
 
 	"github.com/labstack/echo/v4"
@@ -20,12 +21,13 @@ var (
 )
 
 func RegisterHandlers(e *echo.Echo) {
-	// routes := collectRoutes("frontend/src/routeTree.gen.ts")
-	routes := collectRoutes(routeTreeFS)
+	file := "src/routeTree.gen.ts"
+	routes := collectRoutes(routeTreeFS, file)
+	newRoutes := modifyRoutes(routes)
 
-	for _, r := range routes {
+	for _, r := range newRoutes {
 		e.FileFS(r, "index.html", distIndexHtml)
-		// fmt.Println("registering", r)
+		fmt.Println("registering", r)
 	}
 
 	// this must match the routes (pages) in react
@@ -36,34 +38,63 @@ func RegisterHandlers(e *echo.Echo) {
 	e.StaticFS("/", distDirFS)
 }
 
-// func collectRoutes (file string) []string {
-func collectRoutes (fileFS embed.FS) []string {
+// func collectRoutes (fileFS embed.FS) []string {
+	func collectRoutes (fileFS embed.FS, file string) []string {
 	routes := []string{}
 
-	dat, err := fileFS.ReadFile("src/routeTree.gen.ts")
+	dat, err := fileFS.ReadFile(file)
     check(err)
-
+	
 	// regexp '/route':
-	// r := regexp.MustCompile(`'([^{}]*)':`)
-	r := regexp.MustCompile(`"([^{}]*)":`)
+	// r := regexp.MustCompile(`"([^{}]*)":`)
+	r := regexp.MustCompile(`'([^{}]*)':`)
 	matches := r.FindAllStringSubmatch(string(dat), -1)
 
-	reg := regexp.MustCompile(`\$`)
-	for _, v := range matches {
-		route := v[1]
-		found := reg.FindStringIndex(route)
-		start := -1
-		if len(found) > 0 {
-			start = found[0]
-		}
-
-		if start != -1 {
-			route = route[0 : start] + "*"
-		}
-
+	for _, r := range matches {
+		route := r[1]
 		routes = append(routes, route)
 	}
+
 	return routes
+}
+
+func modifyRoutes(routes []string) []string {
+	newRoutes := []string{}
+	for _, route := range routes {
+		newRoutes = append(newRoutes, removeParams(route))
+	}
+	return newRoutes
+}
+
+func removeParams(route string) string {
+	reg_dollar := regexp.MustCompile(`\$`)
+	found_dollar := reg_dollar.FindStringIndex(route)
+
+	newRoute := route
+
+	if len(found_dollar) > 0 {
+		start := found_dollar[0]
+		url_after_dolar := route[start : ]
+
+		reg_slash := regexp.MustCompile(`/`)
+		found_slash := reg_slash.FindStringIndex(url_after_dolar)
+
+		// end := len(url_after_dolar)
+		if len(found_slash) > 0 {
+			end := found_slash[0]
+			newRoute = route[ : start] + "*" +  route[start+end : ]
+		} else {
+			newRoute = route[ : start] + "*"
+		}
+			
+		// if it contains $ run it again
+		found_another_dollar := reg_dollar.FindStringIndex(newRoute)
+		if len(found_another_dollar) > 0 {
+			newRoute = removeParams(newRoute)
+		}
+	}
+
+	return newRoute
 }
 
 func check(e error) {
@@ -71,4 +102,3 @@ func check(e error) {
         panic(e)
     }
 }
-

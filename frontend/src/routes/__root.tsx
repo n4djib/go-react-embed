@@ -24,6 +24,11 @@ export const Route = createRootRoute({
             Pokemon1
           </Link>
         </li>
+        <li>
+          <Link to="/posts/1/edit" activeProps={activeProps}>
+            Edit Post
+          </Link>
+        </li>
       </ul>
       <div className="p-2">
         <Outlet />

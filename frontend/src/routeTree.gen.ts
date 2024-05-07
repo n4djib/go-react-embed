@@ -10,44 +10,54 @@
 
 // Import Routes
 
-import { Route as rootRoute } from "./routes/__root";
-import { Route as ProfileImport } from "./routes/profile";
-import { Route as IndexImport } from "./routes/index";
-import { Route as PokemonIdImport } from "./routes/pokemon/$id";
+import { Route as rootRoute } from './routes/__root'
+import { Route as ProfileImport } from './routes/profile'
+import { Route as IndexImport } from './routes/index'
+import { Route as PokemonIdImport } from './routes/pokemon/$id'
+import { Route as PostsIdEditImport } from './routes/posts/$id/edit'
 
 // Create/Update Routes
 
 const ProfileRoute = ProfileImport.update({
-  path: "/profile",
+  path: '/profile',
   getParentRoute: () => rootRoute,
-} as any);
+} as any)
 
 const IndexRoute = IndexImport.update({
-  path: "/",
+  path: '/',
   getParentRoute: () => rootRoute,
-} as any);
+} as any)
 
 const PokemonIdRoute = PokemonIdImport.update({
-  path: "/pokemon/$id",
+  path: '/pokemon/$id',
   getParentRoute: () => rootRoute,
-} as any);
+} as any)
+
+const PostsIdEditRoute = PostsIdEditImport.update({
+  path: '/posts/$id/edit',
+  getParentRoute: () => rootRoute,
+} as any)
 
 // Populate the FileRoutesByPath interface
 
-declare module "@tanstack/react-router" {
+declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    "/": {
-      preLoaderRoute: typeof IndexImport;
-      parentRoute: typeof rootRoute;
-    };
-    "/profile": {
-      preLoaderRoute: typeof ProfileImport;
-      parentRoute: typeof rootRoute;
-    };
-    "/pokemon/$id": {
-      preLoaderRoute: typeof PokemonIdImport;
-      parentRoute: typeof rootRoute;
-    };
+    '/': {
+      preLoaderRoute: typeof IndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/profile': {
+      preLoaderRoute: typeof ProfileImport
+      parentRoute: typeof rootRoute
+    }
+    '/pokemon/$id': {
+      preLoaderRoute: typeof PokemonIdImport
+      parentRoute: typeof rootRoute
+    }
+    '/posts/$id/edit': {
+      preLoaderRoute: typeof PostsIdEditImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -57,6 +67,7 @@ export const routeTree = rootRoute.addChildren([
   IndexRoute,
   ProfileRoute,
   PokemonIdRoute,
-]);
+  PostsIdEditRoute,
+])
 
 /* prettier-ignore-end */

@@ -1,7 +1,9 @@
 package main
 
 import (
+	"errors"
 	"flag"
+	"fmt"
 	"go-react-embed/frontend"
 	"log"
 	"net/http"
@@ -18,11 +20,9 @@ type Data struct {
 	Msg string `json:"msg"`
 }
 
-// TODO put urls in ENV
-
 func main () {
 	// load .env file
-	err := godotenv.Load(".env")
+	err := createAndLoadEnv()
 	if err != nil {
 		log.Fatalf("Error loading .env file")
 	}
@@ -57,7 +57,28 @@ func main () {
 
 	// start server 
 	e.Logger.Fatal(e.Start(":"+os.Getenv("APP_PORT")))
-	// e.Logger.Fatal(e.Start( ":8080" ))
+}
+
+func createAndLoadEnv() error {
+	// check if file exist
+	if _, err := os.Stat(".env"); errors.Is(err, os.ErrNotExist) {
+		// create .env file
+		f, err := os.Create(".env");
+    	check(err)
+		defer f.Close()
+
+		fmt.Println("creating .env")
+
+		_, err1 := f.WriteString(`APP_URL="http://localhost"
+APP_PORT="8080"
+DEV_PORT="8081"`);
+    	check(err1)
+
+		f.Sync()
+	}
+
+	err := godotenv.Load(".env")
+	return err
 }
 
 func openBrowser(url string) {
@@ -88,4 +109,10 @@ func openURL(url string) error {
     }
 
     return cmd.Start()
+}
+
+func check(e error) {
+    if e != nil {
+        panic(e)
+    }
 }
