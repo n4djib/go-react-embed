@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"go-react-embed/frontend"
-	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -23,24 +22,13 @@ type Data struct {
 func main () {
 	// load .env file
 	err := createAndLoadEnv()
-	if err != nil {
-		log.Fatalf("Error loading .env file")
-	}
+	check(err)
 	
 	// create echo app
 	e := echo.New()
 	
 	// CORS
-	corsConfig := middleware.CORSConfig{
-		AllowOrigins: []string{
-			os.Getenv("APP_URL")+":"+os.Getenv("APP_PORT"), 
-			os.Getenv("APP_URL")+":"+os.Getenv("DEV_PORT"),
-		},
-		// AllowMethods: []string{
-		// 	echo.GET, echo.PUT, echo.POST, echo.DELETE
-		// },
-	}
-	e.Use(middleware.CORSWithConfig(corsConfig))
+	useCORSMiddleware(e)
 	
 	e.GET("/api", func(ctx echo.Context) error {
 		// return ctx.String(http.StatusOK, "Hello, Gophers....")
@@ -59,6 +47,19 @@ func main () {
 	e.Logger.Fatal(e.Start(":"+os.Getenv("APP_PORT")))
 }
 
+func useCORSMiddleware(e *echo.Echo) {
+	corsConfig := middleware.CORSConfig{
+		AllowOrigins: []string{
+			os.Getenv("APP_URL")+":"+os.Getenv("APP_PORT"), 
+			os.Getenv("APP_URL")+":"+os.Getenv("DEV_PORT"),
+		},
+		// AllowMethods: []string{
+		// 	echo.GET, echo.PUT, echo.POST, echo.DELETE
+		// },
+	}
+	e.Use(middleware.CORSWithConfig(corsConfig))
+}
+
 func createAndLoadEnv() error {
 	// check if file exist
 	if _, err := os.Stat(".env"); errors.Is(err, os.ErrNotExist) {
@@ -73,8 +74,6 @@ func createAndLoadEnv() error {
 APP_PORT="8080"
 DEV_PORT="8081"`);
     	check(err1)
-
-		f.Sync()
 	}
 
 	err := godotenv.Load(".env")
