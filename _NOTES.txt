@@ -35,6 +35,16 @@ npm i @material-tailwind/react
 npm i -D @types/react@18.2.42
 
 
+== tanstack router
+npm install @tanstack/react-router
+npm install --save-dev @tanstack/router-vite-plugin 
+npm install --save-dev @tanstack/router-devtools
+
+
+
+
+
+
 
 
 ==================
