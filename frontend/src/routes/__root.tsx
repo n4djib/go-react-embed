@@ -20,8 +20,8 @@ export const Route = createRootRoute({
           </Link>
         </li>
         <li>
-          <Link to="/pokemon/1" activeProps={activeProps}>
-            Pokemon1
+          <Link to="/pokemon" activeProps={activeProps}>
+            Pokemon
           </Link>
         </li>
         <li>

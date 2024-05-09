@@ -49,7 +49,8 @@ go get github.com/joho/godotenv
 
 
 ==================
-- 
+- database file should be embeded in exe (as a starting db)
+  and copied to drive if not existing
 - 
 - 
 - 

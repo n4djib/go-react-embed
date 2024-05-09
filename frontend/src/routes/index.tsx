@@ -22,10 +22,10 @@ function Index() {
 
   return (
     <>
-      <h1 className="text-3xl font-bold underline">Home Page</h1>
+      <h1 className="text-2xl font-bold">Home Page</h1>
       <div>Data fetched from (/api) : {data}</div>
       <br />
-      <div className="flex w-max gap-4">
+      <div className="flex w-max gap-2">
         <Button color="indigo" onClick={fetchData}>
           Fetch
         </Button>

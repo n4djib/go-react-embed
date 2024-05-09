@@ -13,6 +13,7 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as ProfileImport } from './routes/profile'
 import { Route as IndexImport } from './routes/index'
+import { Route as PokemonIndexImport } from './routes/pokemon/index'
 import { Route as PokemonIdImport } from './routes/pokemon/$id'
 import { Route as PostsIdEditImport } from './routes/posts/$id/edit'
 
@@ -25,6 +26,11 @@ const ProfileRoute = ProfileImport.update({
 
 const IndexRoute = IndexImport.update({
   path: '/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const PokemonIndexRoute = PokemonIndexImport.update({
+  path: '/pokemon/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -54,6 +60,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PokemonIdImport
       parentRoute: typeof rootRoute
     }
+    '/pokemon/': {
+      preLoaderRoute: typeof PokemonIndexImport
+      parentRoute: typeof rootRoute
+    }
     '/posts/$id/edit': {
       preLoaderRoute: typeof PostsIdEditImport
       parentRoute: typeof rootRoute
@@ -67,6 +77,7 @@ export const routeTree = rootRoute.addChildren([
   IndexRoute,
   ProfileRoute,
   PokemonIdRoute,
+  PokemonIndexRoute,
   PostsIdEditRoute,
 ])
 

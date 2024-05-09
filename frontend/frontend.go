@@ -2,7 +2,6 @@ package frontend
 
 import (
 	"embed"
-	"fmt"
 	"regexp"
 
 	"github.com/labstack/echo/v4"
@@ -27,7 +26,7 @@ func RegisterHandlers(e *echo.Echo) {
 
 	for _, r := range newRoutes {
 		e.FileFS(r, "index.html", distIndexHtml)
-		fmt.Println("registering", r)
+		// fmt.Println("registering:", r)
 	}
 
 	// this must match the routes (pages) in react
@@ -38,8 +37,7 @@ func RegisterHandlers(e *echo.Echo) {
 	e.StaticFS("/", distDirFS)
 }
 
-// func collectRoutes (fileFS embed.FS) []string {
-	func collectRoutes (fileFS embed.FS, file string) []string {
+func collectRoutes (fileFS embed.FS, file string) []string {
 	routes := []string{}
 
 	dat, err := fileFS.ReadFile(file)

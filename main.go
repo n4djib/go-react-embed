@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"go-react-embed/frontend"
-	"net/http"
 	"os"
 	"os/exec"
 	"runtime"
@@ -15,9 +14,6 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
-type Data struct {
-	Msg string `json:"msg"`
-}
 
 func main () {
 	// load .env file
@@ -30,13 +26,14 @@ func main () {
 	// CORS
 	useCORSMiddleware(e)
 	
-	e.GET("/api", func(ctx echo.Context) error {
-		// return ctx.String(http.StatusOK, "Hello, Gophers....")
-		d := &Data{ Msg: "Hello, Gophers."}
-		return ctx.JSON(http.StatusOK, d)
-	})
+	// e.GET("/api", func(ctx echo.Context) error {
+	//  return ctx.String(http.StatusOK, "Hello, Gophers....")
+	// })
+
+	// from routes file
+	RegisterHandlers( e.Group("/api"))
 	
-	// register static (/) page build from react
+	// register react static pages build from react
 	frontend.RegisterHandlers(e)
 
 	// open app url
