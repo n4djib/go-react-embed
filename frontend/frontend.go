@@ -37,7 +37,7 @@ func RegisterHandlers(e *echo.Echo) {
 	e.StaticFS("/", distDirFS)
 }
 
-func collectRoutes (fileFS embed.FS, file string) []string {
+func collectRoutes(fileFS embed.FS, file string) []string {
 	routes := []string{}
 
 	dat, err := fileFS.ReadFile(file)

@@ -29,6 +29,11 @@ export const Route = createRootRoute({
             Edit Post
           </Link>
         </li>
+        <li>
+          <Link to="/echart" activeProps={activeProps}>
+            Echart
+          </Link>
+        </li>
       </ul>
       <div className="p-2">
         <Outlet />

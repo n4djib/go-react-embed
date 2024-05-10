@@ -12,6 +12,7 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as ProfileImport } from './routes/profile'
+import { Route as EchartImport } from './routes/echart'
 import { Route as IndexImport } from './routes/index'
 import { Route as PokemonIndexImport } from './routes/pokemon/index'
 import { Route as PokemonIdImport } from './routes/pokemon/$id'
@@ -21,6 +22,11 @@ import { Route as PostsIdEditImport } from './routes/posts/$id/edit'
 
 const ProfileRoute = ProfileImport.update({
   path: '/profile',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const EchartRoute = EchartImport.update({
+  path: '/echart',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -52,6 +58,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
+    '/echart': {
+      preLoaderRoute: typeof EchartImport
+      parentRoute: typeof rootRoute
+    }
     '/profile': {
       preLoaderRoute: typeof ProfileImport
       parentRoute: typeof rootRoute
@@ -75,6 +85,7 @@ declare module '@tanstack/react-router' {
 
 export const routeTree = rootRoute.addChildren([
   IndexRoute,
+  EchartRoute,
   ProfileRoute,
   PokemonIdRoute,
   PokemonIndexRoute,

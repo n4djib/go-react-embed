@@ -1,4 +1,4 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/pokemon/$id")({
@@ -19,18 +19,17 @@ const PokemonList = () => {
     const response = await fetch(`http://localhost:8080/api/pokemons/${id}`);
     const data = await response.json();
     setPokemon(data);
-    console.log("fetching");
+    // console.log("fetching");
   };
 
   useEffect(() => {
     fetchData().catch((err) => console.log(err));
   }, []);
 
-  console.log(pokemon);
+  // console.log(pokemon);
 
   return (
-    <div>
-      Hello Pokemon #{id}
+    <>
       {pokemon ? (
         <div>
           <p>ID: {pokemon.id}</p>
@@ -46,6 +45,6 @@ const PokemonList = () => {
       ) : (
         "Loading..."
       )}
-    </div>
+    </>
   );
 };

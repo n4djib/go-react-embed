@@ -47,12 +47,24 @@ go get github.com/joho/godotenv
 
 
 
+npm i echarts-for-react
+
+
+
+
 
 ==================
 - database file should be embeded in exe (as a starting db)
-  and copied to drive if not existing
+    and copied to drive if not existing
+    maybe do the same for ENV file
+- script to build react when building GO
+- create AUTH system
 - 
 - 
 - 
-- 
-- 
+
+===================
+go env
+  to show GO env settings
+
+cd frontend && npm run build && cd.. && go build
