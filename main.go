@@ -2,6 +2,7 @@ package main
 
 import (
 	"go-react-embed/api"
+	"go-react-embed/db"
 	"go-react-embed/frontend"
 	"os"
 
@@ -14,16 +15,17 @@ func main () {
 	// load .env file
 	err := createAndLoadEnv()
 	check(err)
+
+	// create db
+	err = db.CreateDb("./example.db")
+	check(err)
+	defer db.CloseDatabase()
 	
 	// create echo app
 	e := echo.New()
 	
 	// CORS
 	useCORSMiddleware(e)
-	
-	// e.GET("/api", func(ctx echo.Context) error {
-	//  return ctx.String(http.StatusOK, "Hello, Gophers....")
-	// })
 
 	// from routes file
 	api.RegisterHandlers(e.Group("/api"))

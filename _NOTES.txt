@@ -50,6 +50,11 @@ go get github.com/joho/godotenv
 npm i echarts-for-react
 
 
+== DB
+go get github.com/mattn/go-sqlite3
+
+
+
 
 
 

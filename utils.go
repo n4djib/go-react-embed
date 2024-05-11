@@ -21,9 +21,12 @@ func createAndLoadEnv() error {
 
 		fmt.Println("creating .env")
 
-		_, err1 := f.WriteString(`APP_URL="http://localhost"
+		_, err1 := f.WriteString(
+`APP_URL="http://localhost"
 APP_PORT="8080"
-DEV_PORT="8081"`)
+DEV_PORT="8081"
+DATABASE="./example.db"
+`)
 		check(err1)
 	}
 
