@@ -15,15 +15,15 @@ export const Route = createRootRoute({
           <Link to="/" activeProps={activeProps}>
             Home
           </Link>
-          <Link to="/profile" activeProps={activeProps}>
+          {/* <Link to="/profile" activeProps={activeProps}>
             Profile
-          </Link>
+          </Link> */}
           <Link to="/pokemon" activeProps={activeProps}>
             Pokemon
           </Link>
-          <Link to="/posts/1/edit" activeProps={activeProps}>
+          {/* <Link to="/posts/1/edit" activeProps={activeProps}>
             Edit Post
-          </Link>
+          </Link> */}
           <Link to="/echart" activeProps={activeProps}>
             Echart
           </Link>

@@ -25,10 +25,11 @@ type PokemonsData = {
 
 export const usePokemonList = () => {
   return useQuery({
-    queryKey: ["pokeons"],
+    queryKey: ["pokemons"],
     queryFn: async () => {
       try {
         const pokemons: PokemonsData = await getData(`${baseUrl}/api/pokemons`);
+        console.log("pokemons:", pokemons);
         return pokemons;
       } catch (error) {
         console.log("Error while fetching Pokemons");

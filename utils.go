@@ -11,42 +11,55 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func createAndLoadEnv() error {
+func initAndLoadEnv() error {
+	err := createEnvFile()
+	if err != nil {
+		return err
+	}
+
+	err = godotenv.Load(".env")
+	return err
+}
+
+func createEnvFile() error {
 	// check if file exist
 	if _, err := os.Stat(".env"); errors.Is(err, os.ErrNotExist) {
 		// create .env file
 		f, err := os.Create(".env")
-		check(err)
+		if err != nil {
+			return err
+		}
 		defer f.Close()
 
-		fmt.Println("creating .env")
+		fmt.Println("Creating .env File...")
 
-		_, err1 := f.WriteString(
-`APP_URL="http://localhost"
+		ENV_VARIABLES := `
+APP_URL="http://localhost"
 APP_PORT="8080"
 DEV_PORT="8081"
-DATABASE="./example.db"
-`)
-		check(err1)
+DATABASE="./database.db"
+`
+		_, err = f.WriteString(ENV_VARIABLES)
+		if err != nil {
+			return err
+		}
 	}
-
-	err := godotenv.Load(".env")
-	return err
+	return nil
 }
 
-func openBrowser(url string) {
+func openBrowser(url string) error {
 	// grab flag
 	air_flag := flag.Bool("air", false, "detect if run by AIR")
 	flag.Parse()
 	air := bool(*air_flag)
-	// fmt.Println(air)
 
 	// open app url
 	if !air {
 		if err := openURL(url); err != nil {
-			panic(err)
+			return err
 		}
 	}
+	return nil
 }
 
 func openURL(url string) error {
@@ -62,10 +75,4 @@ func openURL(url string) error {
 	}
 
 	return cmd.Start()
-}
-
-func check(e error) {
-    if e != nil {
-        panic(e)
-    }
 }

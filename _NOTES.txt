@@ -82,6 +82,9 @@ sqlc generate
 
 
 
+
+
+
 ==================
 - database file should be embeded in exe (as a starting db)
     and copied to drive if not existing
