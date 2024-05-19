@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"go-react-embed/db"
 	"net/http"
 	"strconv"
@@ -12,7 +13,10 @@ func RegisterHandlers(e *echo.Group) {
 	e.GET("", root)
 	e.GET("/hello", sayHello)
 	e.GET("/pokemons", pokemonsList)
-	e.GET("/pokemons/:id", pokemon) 
+	e.GET("/pokemons/:id", pokemon)
+
+	e.POST("/auth/signup", addUser)
+	e.GET("/auth/users", usersList)
 }
 
 func root(ctx echo.Context) error {
@@ -36,30 +40,46 @@ func pokemon(ctx echo.Context) error {
 	check(err)
 
 	// Defining data
-	data := map[string]db.Pokemon{
-		"data": pokemon,
+	data := db.Data{
+		Data: pokemon,
 	}
 	return ctx.JSON(http.StatusOK, data)
-}
-
-type PokemonList struct {
-	Count int          `json:"count"`
-	Data  []db.Pokemon `json:"data"`
 }
 
 func pokemonsList(ctx echo.Context) error {
 	pokemons, err := db.GetPokemons()
 	check(err)
-
-	list := PokemonList{
+	data := db.DataList{
 		Count: len(pokemons),
 		Data: pokemons,
 	}
-	return ctx.JSON(http.StatusOK, list)
+	return ctx.JSON(http.StatusOK, data)
 }
 
 func check(e error) {
     if e != nil {
         panic(e)
     }
+}
+
+
+/////////////////
+ 
+func usersList(ctx echo.Context) error {
+	users, err := db.GetUsers()
+	check(err)
+	data := db.DataList{
+		Count: len(users),
+		Data: users,
+	}
+	return ctx.JSON(http.StatusOK, data)
+}
+
+func addUser(ctx echo.Context) error {
+	var jsonUser db.User
+	err := ctx.Bind(&jsonUser)
+	check(err)
+	created, err := db.CreateUser(jsonUser)
+	fmt.Println(created, " - ", err)
+	return ctx.JSON(http.StatusOK, created)
 }

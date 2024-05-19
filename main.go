@@ -10,14 +10,13 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
-
 func main () {
 	// load .env file
 	err := createAndLoadEnv()
 	check(err)
 
-	// create db
-	err = db.CreateDb("./example.db")
+	// create db & tables if not exist
+	err = db.CreateDbTables(os.Getenv("DATABASE"))
 	check(err)
 	defer db.CloseDatabase()
 	
@@ -47,10 +46,9 @@ func useCORSMiddleware(e *echo.Echo) {
 			os.Getenv("APP_URL")+":"+os.Getenv("APP_PORT"), 
 			os.Getenv("APP_URL")+":"+os.Getenv("DEV_PORT"),
 		},
-		// AllowMethods: []string{
-		// 	echo.GET, echo.PUT, echo.POST, echo.DELETE
-		// },
+		AllowMethods: []string{
+			echo.GET, echo.PUT, echo.POST, echo.DELETE,
+		},
 	}
 	e.Use(middleware.CORSWithConfig(corsConfig))
 }
-

@@ -16,6 +16,8 @@ import { Route as EchartImport } from './routes/echart'
 import { Route as IndexImport } from './routes/index'
 import { Route as PokemonIndexImport } from './routes/pokemon/index'
 import { Route as PokemonIdImport } from './routes/pokemon/$id'
+import { Route as AuthSignupImport } from './routes/auth/signup'
+import { Route as AuthSigninImport } from './routes/auth/signin'
 import { Route as PostsIdEditImport } from './routes/posts/$id/edit'
 
 // Create/Update Routes
@@ -45,6 +47,16 @@ const PokemonIdRoute = PokemonIdImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const AuthSignupRoute = AuthSignupImport.update({
+  path: '/auth/signup',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AuthSigninRoute = AuthSigninImport.update({
+  path: '/auth/signin',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const PostsIdEditRoute = PostsIdEditImport.update({
   path: '/posts/$id/edit',
   getParentRoute: () => rootRoute,
@@ -64,6 +76,14 @@ declare module '@tanstack/react-router' {
     }
     '/profile': {
       preLoaderRoute: typeof ProfileImport
+      parentRoute: typeof rootRoute
+    }
+    '/auth/signin': {
+      preLoaderRoute: typeof AuthSigninImport
+      parentRoute: typeof rootRoute
+    }
+    '/auth/signup': {
+      preLoaderRoute: typeof AuthSignupImport
       parentRoute: typeof rootRoute
     }
     '/pokemon/$id': {
@@ -87,6 +107,8 @@ export const routeTree = rootRoute.addChildren([
   IndexRoute,
   EchartRoute,
   ProfileRoute,
+  AuthSigninRoute,
+  AuthSignupRoute,
   PokemonIdRoute,
   PokemonIndexRoute,
   PostsIdEditRoute,

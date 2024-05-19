@@ -1,33 +1,14 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { usePokemonList } from "../../lib/tanstack-query/pokemons";
 
 export const Route = createFileRoute("/pokemon/")({
   component: () => <Pokemons />,
 });
 
-type Pokemon = {
-  id: number;
-  name: string;
-  image: string;
-};
-
-type Data = {
-  count: number;
-  data: Pokemon[];
-};
-
 function Pokemons() {
-  const [pokemons, setPokemons] = useState<Data | null>(null);
+  const { data: pokemons, isLoading } = usePokemonList();
 
-  const fetchData = async () => {
-    const response = await fetch("http://localhost:8080/api/pokemons");
-    const data = await response.json();
-    setPokemons(data);
-  };
-
-  useEffect(() => {
-    fetchData().catch((err) => console.log(err));
-  }, []);
+  if (isLoading) return <div>Loading...</div>;
 
   return (
     <>

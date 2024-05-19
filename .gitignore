@@ -14,6 +14,7 @@ dist-ssr
 
 tmp
 *.exe
+*.db
 
 # Editor directories and files
 .vscode/*

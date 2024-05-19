@@ -54,6 +54,30 @@ npm i echarts-for-react
 go get github.com/mattn/go-sqlite3
 
 
+npm install lucide-react
+
+
+
+== tanstack react-query
+npm i @tanstack/react-query
+
+
+=to fix env process type
+npm i --save-dev @types/node
+npm i @tanstack/react-query-devtools
+
+
+== SQLC
+go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+  installed it as administrator
+    and then copied the file to 
+      C:\Users\sona22866\go\bin
+
+sqlc generate
+
+
+
+
 
 
 
