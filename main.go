@@ -36,10 +36,8 @@ func main () {
 	// CORS
 	useCORSMiddleware(e)
 
-	
-	e.GET("/api", root)
-
 	// registerign bachend routes routes
+	e.GET("/api", root)
 	api.RegisterPokemonsHandlers(e.Group("/api"))
 	api.RegisterUsersHandlers(e.Group("/api"))
 	
@@ -67,14 +65,12 @@ func initDatabaseModels() {
 	if err != nil {
 		log.Fatal("Connection to DB error\n", err)
 	}
-
 	// createTables
 	ctx := context.Background()
 	if _, err := db.ExecContext(ctx, ddl); err != nil {
 		log.Fatal("Table Cretation error\n", err)
 	}
 	queries := models.New(db)
-
 	// assign to global variables in models package
 	models.DB, models.CTX, models.QUERIES = db, ctx, queries
 }
@@ -95,7 +91,6 @@ func loggingMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 // 	fmt.Println("reqBody::", string(reqBody))
 // 	fmt.Println("resBody::", string(resBody))
 // }
-
 
 func useCORSMiddleware(e *echo.Echo) {
 	corsConfig := middleware.CORSConfig{
