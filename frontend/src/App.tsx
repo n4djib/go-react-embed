@@ -7,6 +7,12 @@ const router = createRouter({
   routeTree,
 });
 
+declare module "@tanstack/react-router" {
+  interface Register {
+    router: typeof router;
+  }
+}
+
 // Create a client
 const queryClient = new QueryClient();
 
