@@ -1,44 +1,32 @@
 import { createFileRoute } from "@tanstack/react-router";
-// import { useEffect, useState } from "react";
 import { usePokemon } from "../../lib/tanstack-query/pokemons";
 
 export const Route = createFileRoute("/pokemons/$id")({
   component: () => <PokemonList />,
 });
 
-// TODO are they returning types?
-// type Pokemon = {
-//   id: number;
-//   name: string;
-//   image: string;
-// };
-
-// type Data = {
-//   data: Pokemon;
-// };
-
 const PokemonList = () => {
   const { id } = Route.useParams();
-  const { data: pokemon, isLoading } = usePokemon(parseInt(id));
+  const { data: pokemon, isLoading, error } = usePokemon(parseInt(id));
 
   if (isLoading) return <div>Loading...</div>;
 
+  if (error) return <div>Failed to fetch.</div>;
+
   return (
     <>
-      {pokemon ? (
-        <div>
+      {pokemon && (
+        <>
           <p>ID: {pokemon.data.id}</p>
           <p>Name: {pokemon.data.name}</p>
           <div>
             <img
               src={pokemon.data.image}
-              alt={`pokemon image ${pokemon.data.name}`}
+              alt={`pokemon image ${pokemon.data.image}`}
               className="w-60 h-60"
             />
           </div>
-        </div>
-      ) : (
-        "Loading..."
+        </>
       )}
     </>
   );
