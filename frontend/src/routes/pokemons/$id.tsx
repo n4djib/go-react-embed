@@ -6,6 +6,7 @@ export const Route = createFileRoute("/pokemons/$id")({
   component: () => <PokemonList />,
 });
 
+// TODO are they returning types?
 // type Pokemon = {
 //   id: number;
 //   name: string;

@@ -2,6 +2,7 @@ package frontend
 
 import (
 	"embed"
+	"log"
 	"regexp"
 
 	"github.com/labstack/echo/v4"
@@ -21,27 +22,32 @@ var (
 
 func RegisterHandlers(e *echo.Echo) {
 	file := "src/routeTree.gen.ts"
-	routes := collectRoutes(routeTreeFS, file)
+	routes, err := collectRoutes(routeTreeFS, file)
+    if err != nil {
+        log.Fatal("couldn't collect routes from ", file, "\n", err)
+    }
 	newRoutes := modifyRoutes(routes)
+	// fmt.Println("newRoutes:", newRoutes)
 
 	for _, r := range newRoutes {
 		e.FileFS(r, "index.html", distIndexHtml)
 		// fmt.Println("registering:", r)
 	}
-
 	// this must match the routes (pages) in react
 	// e.FileFS("/", "index.html", distIndexHtml)
 	// e.FileFS("/profile", "index.html", distIndexHtml)
-	// e.FileFS("/pokemon/*", "index.html", distIndexHtml)
+	// e.FileFS("/pokemons/*", "index.html", distIndexHtml)
 	
 	e.StaticFS("/", distDirFS)
 }
 
-func collectRoutes(fileFS embed.FS, file string) []string {
+func collectRoutes(fileFS embed.FS, file string) ([]string, error) {
 	routes := []string{}
 
 	dat, err := fileFS.ReadFile(file)
-    check(err)
+    if err != nil {
+        return nil, err
+    }
 	
 	// regexp '/route':
 	// r := regexp.MustCompile(`"([^{}]*)":`)
@@ -53,13 +59,17 @@ func collectRoutes(fileFS embed.FS, file string) []string {
 		routes = append(routes, route)
 	}
 
-	return routes
+	return routes, nil
 }
 
 func modifyRoutes(routes []string) []string {
 	newRoutes := []string{}
 	for _, route := range routes {
-		newRoutes = append(newRoutes, removeParams(route))
+		routeWithNoParams := removeParams(route)
+		// removed the trailing stash from /pokemons/
+		// or else page refresh won't work on refresh
+		newRoute := removeTrailingSlash(routeWithNoParams)
+		newRoutes = append(newRoutes, newRoute)
 	}
 	return newRoutes
 }
@@ -95,8 +105,11 @@ func removeParams(route string) string {
 	return newRoute
 }
 
-func check(e error) {
-    if e != nil {
-        panic(e)
-    }
+func removeTrailingSlash(route string) string {
+	if len(route) > 1 {
+		if route[ len(route)-1 : ] == "/" {
+			return route[ : len(route)-1 ]
+		}
+	}
+	return route
 }
