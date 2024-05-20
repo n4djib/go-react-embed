@@ -1,14 +1,20 @@
 package main
 
 import (
+	"context"
+	"database/sql"
+	_ "embed"
 	"errors"
 	"flag"
 	"fmt"
+	"go-react-embed/models"
+	"log"
 	"os"
 	"os/exec"
 	"runtime"
 
 	"github.com/joho/godotenv"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func initAndLoadEnv() error {
@@ -75,4 +81,24 @@ func openURL(url string) error {
 	}
 
 	return cmd.Start()
+}
+
+//go:embed schema/schema.sql
+var ddl string
+
+func initDatabaseModels() {
+	// connect to database
+	databaseFile := "./database.db"
+	db, err := sql.Open("sqlite3", databaseFile)
+	if err != nil {
+		log.Fatal("Connection to DB error\n", err)
+	}
+	// createTables
+	ctx := context.Background()
+	if _, err := db.ExecContext(ctx, ddl); err != nil {
+		log.Fatal("Table Cretation error\n", err)
+	}
+	queries := models.New(db)
+	// assign to global variables in models package
+	models.DB, models.CTX, models.QUERIES = db, ctx, queries
 }
