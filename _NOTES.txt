@@ -94,7 +94,7 @@ go get github.com/go-playground/validator/v10
     maybe do the same for ENV file
 - script to build react when building GO
 - create AUTH system
-- 
+- Badger & Bolt
 - 
 - 
 
