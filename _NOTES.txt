@@ -76,12 +76,15 @@ go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 sqlc generate
 
 
+go get github.com/go-playground/validator/v10
 
 
 
 
 
 
+
+= add email
 
 
 
