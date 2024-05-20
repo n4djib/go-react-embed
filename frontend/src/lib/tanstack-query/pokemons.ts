@@ -18,18 +18,29 @@ type Pokemon = {
   image: string;
 };
 
+type PokemonData = {
+  data: Pokemon;
+};
+
 type PokemonsData = {
   count: number;
+  limit: number;
+  offset: number;
   data: Pokemon[];
 };
 
-export const usePokemonList = () => {
+type UsePokemonListProps = {
+  limit: number;
+  offset: number;
+};
+
+export const usePokemonList = ({ limit, offset }: UsePokemonListProps) => {
+  const url = `${baseUrl}/api/pokemons?limit=${limit}&offset=${offset}`;
   return useQuery({
     queryKey: ["pokemons"],
     queryFn: async () => {
       try {
-        const pokemons: PokemonsData = await getData(`${baseUrl}/api/pokemons`);
-        console.log("pokemons:", pokemons);
+        const pokemons: PokemonsData = await getData(url);
         return pokemons;
       } catch (error) {
         console.log("Error while fetching Pokemons");
@@ -41,11 +52,12 @@ export const usePokemonList = () => {
 
 export const usePokemon = (id: number) => {
   return useQuery({
-    queryKey: ["pokeon", id],
+    queryKey: ["pokemon", id],
     queryFn: async () => {
       try {
-        // const pokemon: Pokemon = await getData(`${baseUrl}/api/pokemons/${id}`);
-        const pokemon = await getData(`${baseUrl}/api/pokemons/${id}`);
+        const pokemon: PokemonData = await getData(
+          `${baseUrl}/api/pokemons/${id}`
+        );
         return pokemon;
       } catch (error) {
         console.log("Error while fetching Pokemon " + id);

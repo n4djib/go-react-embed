@@ -31,7 +31,12 @@ func getPokemonsHandler(c echo.Context) error {
 	args.Limit = limit
 	args.Offset = offset
 
-	// pokemons, err := models.QUERIES.ListPokemons(models.CTX)
+	allPokemons, err := models.QUERIES.ListPokemons(models.CTX)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, Error{
+			Error: err.Error(),
+		})
+	}
 	pokemons, err := models.QUERIES.ListPokemonsOffset(models.CTX, args)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, Error{
@@ -39,12 +44,9 @@ func getPokemonsHandler(c echo.Context) error {
 		})
 	}
 	data := DataList{
-		Count: len(pokemons),
+		Count: len(allPokemons),
 		Limit: int(limit),
 		Offset: int(offset),
-		// TODO fill Previous & Next
-		// Previous: `/pokemons?limit=3&offset=3`,
-		// Next: `/pokemons?limit=5&offset=3`,
 		Data: pokemons,
 	}
 	return c.JSON(http.StatusOK, data)
