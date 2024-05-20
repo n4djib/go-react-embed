@@ -1,7 +1,18 @@
-import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { usePokemonList } from "../../lib/tanstack-query/pokemons";
-import { Button } from "@material-tailwind/react";
-import { useEffect } from "react";
+import { Button, Spinner } from "@material-tailwind/react";
+import { useEffect, useState } from "react";
+import {
+  List,
+  ListItem,
+  ListItemPrefix,
+  Avatar,
+  Card,
+  Typography,
+  IconButton,
+} from "@material-tailwind/react";
+import { capitalizeFirstLetter } from "../../lib/utils";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
 type PaginationParams = {
   limit: number;
@@ -21,7 +32,8 @@ export const Route = createFileRoute("/pokemons/")({
 
 function Pokemons() {
   const { limit, offset } = Route.useSearch();
-  const navigate = useNavigate();
+  const [offsets, setOffsets] = useState<number[]>([]);
+  // const navigate = useNavigate();
 
   const {
     data: pokemons,
@@ -34,52 +46,122 @@ function Pokemons() {
     refetch();
   }, [limit, offset]);
 
-  if (isLoading) return <div>Loading...</div>;
+  const prev = offset <= 0 ? true : false;
+  const next = pokemons && offset + limit >= pokemons.count ? true : false;
+
+  const offsetsList = () => {
+    if (!pokemons) return;
+    const offsets: number[] = [];
+    let currentOffset = 0;
+    while (pokemons.count > currentOffset) {
+      offsets.push(currentOffset);
+      currentOffset += limit;
+    }
+    console.log("offsets:::", offsets);
+    return offsets;
+  };
+
+  useEffect(() => {
+    const offsets = offsetsList();
+    if (offsets) {
+      setOffsets(offsets);
+    }
+  }, [pokemons && pokemons.count]);
+
+  // onClick={() => {
+  //   navigate({
+  //     to: "/pokemons",
+  //     replace: false,
+  //     search: { limit: limit, offset: newOffset - limit },
+  //   });
+  // }}
+
+  if (isLoading) return <Spinner className="h-12 w-12" />;
 
   if (error) return <div>Failed to fetch.</div>;
 
   return (
     <>
-      <h1 className="text-2xl font-bold">All pokemons</h1>
-      {pokemons &&
-        pokemons.data &&
-        pokemons.data.map((pokemon) => (
-          <div key={pokemon.id}>
-            <Link to={`/pokemons/${pokemon.id}`}>
-              Pokemon #{pokemon.id} {pokemon.name}
-            </Link>
-          </div>
-        ))}
+      <h1 className="text-2xl font-bold">Pokemons List</h1>
+      <Card className="w-80">
+        <List>
+          {pokemons &&
+            pokemons.data &&
+            pokemons.data.map((pokemon) => (
+              <Link
+                to="/pokemons/$id"
+                params={{ id: `${pokemon.id}` }}
+                key={pokemon.id}
+              >
+                <ListItem>
+                  <ListItemPrefix>
+                    <Avatar
+                      variant="circular"
+                      alt={pokemon.name}
+                      src={pokemon.image}
+                    />
+                  </ListItemPrefix>
+                  <div>
+                    <Typography variant="h6" color="blue-gray">
+                      {capitalizeFirstLetter(pokemon.name)}
+                    </Typography>
+                    {/* <Typography variant="small" color="gray" 
+                    className="font-normal">Description</Typography> */}
+                  </div>
+                </ListItem>
+              </Link>
+            ))}
+        </List>
+      </Card>
 
-      <div className="flex gap-2 mt-2">
-        <Button
-          disabled={offset <= 0 ? true : false}
-          onClick={() => {
-            let newOffset = offset;
-            if (offset < 0) newOffset = 0;
-            navigate({
-              to: "/pokemons",
-              replace: false,
-              search: { limit: limit, offset: newOffset - limit },
-            });
+      <div className="flex items-center gap-2 mt-4">
+        <Link
+          disabled={prev}
+          href="/pokemons"
+          search={{
+            limit: limit,
+            offset: offset < 0 ? 0 : offset - limit,
           }}
         >
-          Previous
-        </Button>
-        <Button
-          disabled={pokemons && offset + limit >= pokemons.count ? true : false}
-          onClick={() => {
-            let newOffset = offset;
-            if (pokemons && offset + limit >= pokemons.count) newOffset = 0;
-            navigate({
-              to: "/pokemons",
-              replace: false,
-              search: { limit: limit, offset: newOffset + limit },
-            });
+          <Button
+            variant="text"
+            className="flex items-center gap-2"
+            disabled={prev}
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Previous
+          </Button>
+        </Link>
+        <div className="flex items-center gap-2">
+          {offsets.map((offset, index) => (
+            <Link
+              href="/pokemons"
+              search={{
+                limit,
+                offset: offset,
+              }}
+            >
+              <IconButton>{index}</IconButton>
+            </Link>
+          ))}
+        </div>
+        <Link
+          disabled={next}
+          href="/pokemons"
+          search={{
+            limit: limit,
+            offset: offset + limit,
           }}
         >
-          Next
-        </Button>
+          <Button
+            variant="text"
+            className="flex items-center gap-2"
+            disabled={next}
+          >
+            Next
+            <ArrowRight className="h-4 w-4" />
+          </Button>
+        </Link>
       </div>
     </>
   );

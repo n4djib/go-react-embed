@@ -25,11 +25,14 @@ export const Route = createRootRoute({
               includeSearch: false,
             }}
             search={{
-              limit: 10,
+              limit: 7,
               offset: 0,
             }}
           >
             Pokemon
+          </Link>
+          <Link to="/buttons" activeProps={activeProps}>
+            Buttons
           </Link>
           {/* <Link to="/posts/1/edit" activeProps={activeProps}>
             Edit Post

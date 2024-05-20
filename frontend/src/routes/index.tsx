@@ -32,8 +32,6 @@ function Index() {
         <Button color="red" onClick={() => setData("")}>
           Unset
         </Button>
-        {/* <Button color="green">color green</Button> */}
-        {/* <Button color="amber">color amber</Button> */}
       </div>
     </>
   );
