@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 // import { useEffect, useState } from "react";
 import { usePokemon } from "../../lib/tanstack-query/pokemons";
 
-export const Route = createFileRoute("/pokemon/$id")({
+export const Route = createFileRoute("/pokemons/$id")({
   component: () => <PokemonList />,
 });
 

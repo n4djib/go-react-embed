@@ -14,8 +14,8 @@ import { Route as rootRoute } from './routes/__root'
 import { Route as ProfileImport } from './routes/profile'
 import { Route as EchartImport } from './routes/echart'
 import { Route as IndexImport } from './routes/index'
-import { Route as PokemonIndexImport } from './routes/pokemon/index'
-import { Route as PokemonIdImport } from './routes/pokemon/$id'
+import { Route as PokemonsIndexImport } from './routes/pokemons/index'
+import { Route as PokemonsIdImport } from './routes/pokemons/$id'
 import { Route as AuthSignupImport } from './routes/auth/signup'
 import { Route as AuthSigninImport } from './routes/auth/signin'
 import { Route as PostsIdEditImport } from './routes/posts/$id/edit'
@@ -37,13 +37,13 @@ const IndexRoute = IndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const PokemonIndexRoute = PokemonIndexImport.update({
-  path: '/pokemon/',
+const PokemonsIndexRoute = PokemonsIndexImport.update({
+  path: '/pokemons/',
   getParentRoute: () => rootRoute,
 } as any)
 
-const PokemonIdRoute = PokemonIdImport.update({
-  path: '/pokemon/$id',
+const PokemonsIdRoute = PokemonsIdImport.update({
+  path: '/pokemons/$id',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -86,12 +86,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthSignupImport
       parentRoute: typeof rootRoute
     }
-    '/pokemon/$id': {
-      preLoaderRoute: typeof PokemonIdImport
+    '/pokemons/$id': {
+      preLoaderRoute: typeof PokemonsIdImport
       parentRoute: typeof rootRoute
     }
-    '/pokemon/': {
-      preLoaderRoute: typeof PokemonIndexImport
+    '/pokemons/': {
+      preLoaderRoute: typeof PokemonsIndexImport
       parentRoute: typeof rootRoute
     }
     '/posts/$id/edit': {
@@ -109,8 +109,8 @@ export const routeTree = rootRoute.addChildren([
   ProfileRoute,
   AuthSigninRoute,
   AuthSignupRoute,
-  PokemonIdRoute,
-  PokemonIndexRoute,
+  PokemonsIdRoute,
+  PokemonsIndexRoute,
   PostsIdEditRoute,
 ])
 

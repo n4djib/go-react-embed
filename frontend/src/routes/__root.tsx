@@ -18,7 +18,17 @@ export const Route = createRootRoute({
           {/* <Link to="/profile" activeProps={activeProps}>
             Profile
           </Link> */}
-          <Link to="/pokemon" activeProps={activeProps}>
+          <Link
+            to="/pokemons"
+            activeProps={activeProps}
+            activeOptions={{
+              includeSearch: false,
+            }}
+            search={{
+              limit: 10,
+              offset: 0,
+            }}
+          >
             Pokemon
           </Link>
           {/* <Link to="/posts/1/edit" activeProps={activeProps}>
