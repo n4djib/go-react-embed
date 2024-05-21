@@ -41,5 +41,6 @@ SELECT * FROM pokemons WHERE id = ? LIMIT 1;
 SELECT * FROM pokemons ORDER BY id;
 
 -- name: ListPokemonsOffset :many
-SELECT * FROM pokemons ORDER BY id LIMIT ? OFFSET ?;
+SELECT *, (SELECT count(*) FROM pokemons) FROM pokemons ORDER BY id LIMIT ? OFFSET ?;
+-- SELECT * FROM pokemons ORDER BY id LIMIT ? OFFSET ?;
 

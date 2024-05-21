@@ -31,20 +31,24 @@ func getPokemonsHandler(c echo.Context) error {
 	args.Limit = limit
 	args.Offset = offset
 
-	allPokemons, err := models.QUERIES.ListPokemons(models.CTX)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, Error{
-			Error: err.Error(),
-		})
-	}
+	// allPokemons, err := models.QUERIES.ListPokemons(models.CTX)
+	// if err != nil {
+	// 	return c.JSON(http.StatusInternalServerError, Error{
+	// 		Error: err.Error(),
+	// 	})
+	// }
 	pokemons, err := models.QUERIES.ListPokemonsOffset(models.CTX, args)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, Error{
 			Error: err.Error(),
 		})
 	}
+	count := 0
+	if len(pokemons) > 0 {
+		count = int(pokemons[0].Count)
+	}
 	data := DataList{
-		Count: len(allPokemons),
+		Count: count,
 		Limit: int(limit),
 		Offset: int(offset),
 		Data: pokemons,
