@@ -12,6 +12,7 @@ import {
   IconButton,
 } from "@material-tailwind/react";
 import { capitalizeFirstLetter } from "../../lib/utils";
+import { Pokemon, PokemonsData } from "../../lib/tanstack-query/pokemons";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 type PaginationParams = {
@@ -32,8 +33,6 @@ export const Route = createFileRoute("/pokemons/")({
 
 function Pokemons() {
   const { limit, offset } = Route.useSearch();
-  const [offsets, setOffsets] = useState<number[]>([]);
-  // const navigate = useNavigate();
 
   const {
     data: pokemons,
@@ -46,27 +45,7 @@ function Pokemons() {
     refetch();
   }, [limit, offset]);
 
-  const prev = offset <= 0 ? true : false;
-  const next = pokemons && offset + limit >= pokemons.count ? true : false;
-
-  const offsetsList = () => {
-    if (!pokemons) return;
-    const offsets: number[] = [];
-    let currentOffset = 0;
-    while (pokemons.count > currentOffset) {
-      offsets.push(currentOffset);
-      currentOffset += limit;
-    }
-    console.log("offsets:::", offsets);
-    return offsets;
-  };
-
-  useEffect(() => {
-    const offsets = offsetsList();
-    if (offsets) {
-      setOffsets(offsets);
-    }
-  }, [pokemons && pokemons.count]);
+  // const navigate = useNavigate();
 
   // onClick={() => {
   //   navigate({
@@ -77,7 +56,6 @@ function Pokemons() {
   // }}
 
   if (isLoading) return <Spinner className="h-12 w-12" />;
-
   if (error) return <div>Failed to fetch.</div>;
 
   return (
@@ -88,86 +66,130 @@ function Pokemons() {
           {pokemons &&
             pokemons.data &&
             pokemons.data.map((pokemon) => (
-              <Link
-                to="/pokemons/$id"
-                params={{ id: `${pokemon.id}` }}
-                key={pokemon.id}
-              >
-                <ListItem>
-                  <ListItemPrefix>
-                    <Avatar
-                      variant="square"
-                      alt={pokemon.name}
-                      src={pokemon.image}
-                    />
-                  </ListItemPrefix>
-                  <div>
-                    <Typography variant="h6" color="blue-gray">
-                      {capitalizeFirstLetter(pokemon.name)}
-                    </Typography>
-                    {/* <Typography variant="small" color="gray" 
-                    className="font-normal">Description</Typography> */}
-                  </div>
-                </ListItem>
-              </Link>
+              <PokemonListItem pokemon={pokemon} key={pokemon.id} />
             ))}
         </List>
       </Card>
-
-      {/* Pagination Component */}
-      <div className="flex items-center gap-1 mt-4">
-        <Link
-          disabled={prev}
-          href="/pokemons"
-          search={{
-            limit: limit,
-            offset: offset < 0 ? 0 : offset - limit,
-          }}
-        >
-          <Button
-            variant="text"
-            className="flex items-center gap-2"
-            disabled={prev}
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Previous
-          </Button>
-        </Link>
-
-        <div className="flex items-center gap-1">
-          {offsets.map((currentOffset, index) => (
-            <Link
-              href="/pokemons"
-              search={{
-                limit,
-                offset: currentOffset,
-              }}
-            >
-              <IconButton variant={offset == currentOffset ? "filled" : "text"}>
-                {index}
-              </IconButton>
-            </Link>
-          ))}
-        </div>
-
-        <Link
-          disabled={next}
-          href="/pokemons"
-          search={{
-            limit: limit,
-            offset: offset + limit,
-          }}
-        >
-          <Button
-            variant="text"
-            className="flex items-center gap-2"
-            disabled={next}
-          >
-            Next
-            <ArrowRight className="h-4 w-4" />
-          </Button>
-        </Link>
-      </div>
+      <Pagination pokemons={pokemons!} limit={limit} offset={offset} />
     </>
+  );
+}
+
+function PokemonListItem({ pokemon }: { pokemon: Pokemon }) {
+  return (
+    <Link to="/pokemons/$id" params={{ id: `${pokemon.id}` }}>
+      <ListItem>
+        <ListItemPrefix>
+          <Avatar
+            variant="square"
+            alt={pokemon.name}
+            src={pokemon.image}
+            className="overflow-visible overflo"
+          />
+        </ListItemPrefix>
+        <div className="ml-4">
+          <Typography variant="h6" color="blue-gray">
+            {capitalizeFirstLetter(pokemon.name)}
+          </Typography>
+          {/* <Typography variant="small" color="gray" 
+                    className="font-normal">Description</Typography> */}
+        </div>
+      </ListItem>
+    </Link>
+  );
+}
+
+function Pagination({
+  pokemons,
+  limit,
+  offset,
+}: {
+  pokemons: PokemonsData;
+  limit: number;
+  offset: number;
+}) {
+  const [offsets, setOffsets] = useState<number[]>([]);
+  const count = pokemons.count;
+
+  useEffect(() => {
+    const offsets = offsetsList();
+    if (offsets) {
+      setOffsets(offsets);
+    }
+  }, [pokemons && pokemons.count]);
+
+  const offsetsList = () => {
+    if (!pokemons) {
+      return;
+    }
+    const offsets: number[] = [];
+    let currentOffset = 0;
+    while (count > currentOffset) {
+      offsets.push(currentOffset);
+      currentOffset += limit;
+    }
+    console.log("offsets:::", offsets);
+    console.log("offsets pokemons:::", { pokemons });
+    return offsets;
+  };
+
+  if (!pokemons) return <Spinner />;
+
+  const prev = offset <= 0 ? true : false;
+  const next = offset + limit >= count ? true : false;
+
+  return (
+    <div className="flex items-center gap-1 mt-4">
+      <Link
+        disabled={prev}
+        href="/pokemons"
+        search={{
+          limit: limit,
+          offset: offset < 0 ? 0 : offset - limit,
+        }}
+      >
+        <Button
+          variant="text"
+          className="flex items-center gap-2"
+          disabled={prev}
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Previous
+        </Button>
+      </Link>
+      <div className="flex items-center gap-1">
+        {offsets.map((currentOffset, index) => (
+          <Link
+            href="/pokemons"
+            search={{
+              limit: limit,
+              offset: currentOffset,
+            }}
+            key={index}
+          >
+            <IconButton variant={offset == currentOffset ? "filled" : "text"}>
+              {index}
+            </IconButton>
+          </Link>
+        ))}
+      </div>
+      <Link
+        disabled={next}
+        href="/pokemons"
+        search={{
+          limit: limit,
+          offset: offset + limit,
+        }}
+      >
+        <Button
+          variant="text"
+          className="flex items-center gap-2"
+          disabled={next}
+        >
+          Next
+          <ArrowRight className="h-4 w-4" />
+        </Button>
+      </Link>
+    </div>
   );
 }

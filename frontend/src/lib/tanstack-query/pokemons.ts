@@ -12,7 +12,7 @@ export const getData = async (url: string) => {
 const baseUrl =
   import.meta.env.VITE_APP_URL + ":" + import.meta.env.VITE_APP_PORT;
 
-type Pokemon = {
+export type Pokemon = {
   id: number;
   name: string;
   image: string;
@@ -22,7 +22,7 @@ type PokemonData = {
   data: Pokemon;
 };
 
-type PokemonsData = {
+export type PokemonsData = {
   count: number;
   limit: number;
   offset: number;
