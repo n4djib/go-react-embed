@@ -96,7 +96,7 @@ function Pokemons() {
                 <ListItem>
                   <ListItemPrefix>
                     <Avatar
-                      variant="circular"
+                      variant="square"
                       alt={pokemon.name}
                       src={pokemon.image}
                     />
@@ -114,7 +114,8 @@ function Pokemons() {
         </List>
       </Card>
 
-      <div className="flex items-center gap-2 mt-4">
+      {/* Pagination Component */}
+      <div className="flex items-center gap-1 mt-4">
         <Link
           disabled={prev}
           href="/pokemons"
@@ -132,19 +133,23 @@ function Pokemons() {
             Previous
           </Button>
         </Link>
-        <div className="flex items-center gap-2">
-          {offsets.map((offset, index) => (
+
+        <div className="flex items-center gap-1">
+          {offsets.map((currentOffset, index) => (
             <Link
               href="/pokemons"
               search={{
                 limit,
-                offset: offset,
+                offset: currentOffset,
               }}
             >
-              <IconButton>{index}</IconButton>
+              <IconButton variant={offset == currentOffset ? "filled" : "text"}>
+                {index}
+              </IconButton>
             </Link>
           ))}
         </div>
+
         <Link
           disabled={next}
           href="/pokemons"
