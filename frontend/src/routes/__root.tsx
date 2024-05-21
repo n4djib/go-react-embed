@@ -29,7 +29,7 @@ export const Route = createRootRoute({
               offset: 0,
             }}
           >
-            Pokemon
+            Pokemons
           </Link>
           <Link to="/buttons" activeProps={activeProps}>
             Buttons
