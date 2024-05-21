@@ -43,7 +43,7 @@ func createEnvFile() error {
 APP_URL="http://localhost"
 APP_PORT="8080"
 DEV_PORT="8081"
-DATABASE="./database.db"
+DATABASE="./go-react-embed.db"
 `
 		_, err = f.WriteString(ENV_VARIABLES)
 		if err != nil {
@@ -88,7 +88,7 @@ var ddl string
 
 func initDatabaseModels() {
 	// connect to database
-	databaseFile := "./database.db"
+	databaseFile := os.Getenv("DATABASE")
 	db, err := sql.Open("sqlite3", databaseFile)
 	if err != nil {
 		log.Fatal("Connection to DB error\n", err)
