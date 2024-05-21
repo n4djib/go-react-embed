@@ -128,8 +128,8 @@ function Pagination({
       offsets.push(currentOffset);
       currentOffset += limit;
     }
-    console.log("offsets:::", offsets);
-    console.log("offsets pokemons:::", { pokemons });
+    // console.log("offsets:::", offsets);
+    // console.log("offsets pokemons:::", { pokemons });
     return offsets;
   };
 
@@ -168,7 +168,7 @@ function Pagination({
             key={index}
           >
             <IconButton variant={offset == currentOffset ? "filled" : "text"}>
-              {index}
+              {index + 1}
             </IconButton>
           </Link>
         ))}
