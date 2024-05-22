@@ -174,8 +174,35 @@ func (q *Queries) ListPokemons(ctx context.Context) ([]Pokemon, error) {
 	return items, nil
 }
 
+const listPokemonsNames = `-- name: ListPokemonsNames :many
+SELECT name FROM pokemons
+`
+
+func (q *Queries) ListPokemonsNames(ctx context.Context) ([]string, error) {
+	rows, err := q.db.QueryContext(ctx, listPokemonsNames)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			return nil, err
+		}
+		items = append(items, name)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listPokemonsOffset = `-- name: ListPokemonsOffset :many
-SELECT id, name, image, (SELECT count(*) FROM pokemons) FROM pokemons ORDER BY id LIMIT ? OFFSET ?
+SELECT id, name, image FROM pokemons ORDER BY id LIMIT ? OFFSET ?
 `
 
 type ListPokemonsOffsetParams struct {
@@ -183,28 +210,16 @@ type ListPokemonsOffsetParams struct {
 	Offset int64 `db:"offset" json:"offset"`
 }
 
-type ListPokemonsOffsetRow struct {
-	ID    int64  `db:"id" json:"id"`
-	Name  string `db:"name" json:"name"`
-	Image string `db:"image" json:"image"`
-	Count int64  `db:"count" json:"count"`
-}
-
-func (q *Queries) ListPokemonsOffset(ctx context.Context, arg ListPokemonsOffsetParams) ([]ListPokemonsOffsetRow, error) {
+func (q *Queries) ListPokemonsOffset(ctx context.Context, arg ListPokemonsOffsetParams) ([]Pokemon, error) {
 	rows, err := q.db.QueryContext(ctx, listPokemonsOffset, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ListPokemonsOffsetRow
+	var items []Pokemon
 	for rows.Next() {
-		var i ListPokemonsOffsetRow
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.Image,
-			&i.Count,
-		); err != nil {
+		var i Pokemon
+		if err := rows.Scan(&i.ID, &i.Name, &i.Image); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
