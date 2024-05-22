@@ -15,7 +15,6 @@ function Index() {
     const response = await fetch(baseUrl + "/api");
     const data = await response.text();
     setData(data);
-    console.log("fetching");
   };
 
   useEffect(() => {
