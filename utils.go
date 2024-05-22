@@ -40,7 +40,7 @@ func createEnvFile() error {
 		fmt.Println("Creating .env File...")
 
 		ENV_VARIABLES := `
-APP_URL="http://localhost"
+APP_URL="https://localhost"
 APP_PORT="8080"
 DEV_PORT="8081"
 DATABASE="./go-react-embed.db"

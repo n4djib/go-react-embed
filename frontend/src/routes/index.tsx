@@ -6,11 +6,13 @@ export const Route = createFileRoute("/")({
   component: () => <Index />,
 });
 
+const baseUrl = import.meta.env.VITE_BACKEND_URL;
+
 function Index() {
   const [data, setData] = useState<string>("");
 
   const fetchData = async () => {
-    const response = await fetch("http://localhost:8080/api");
+    const response = await fetch(baseUrl + "/api");
     const data = await response.text();
     setData(data);
     console.log("fetching");

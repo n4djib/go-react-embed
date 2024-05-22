@@ -9,8 +9,7 @@ export const getData = async (url: string) => {
   return res.json();
 };
 
-const baseUrl =
-  import.meta.env.VITE_APP_URL + ":" + import.meta.env.VITE_APP_PORT;
+const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
 export type Pokemon = {
   id: number;

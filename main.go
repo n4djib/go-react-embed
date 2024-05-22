@@ -40,14 +40,15 @@ func main () {
 	frontend.RegisterHandlers(e)
 
 	// open app url
-	url := os.Getenv("APP_URL")+":"+os.Getenv("APP_PORT")
+	url := os.Getenv("APP_URL") + ":" + os.Getenv("APP_PORT")
 	err = openBrowser(url)
 	if err != nil {
 		log.Fatal("Problem Openning the browser\n", err)
 	}
 
 	// start server 
-	e.Logger.Fatal(e.Start(":"+os.Getenv("APP_PORT")))
+	// e.Logger.Fatal(e.Start(":"+os.Getenv("APP_PORT")))
+	e.Logger.Fatal(e.StartTLS(":"+os.Getenv("APP_PORT"), "server.crt", "server.key"))
 }
 
 // Custom logging middleware

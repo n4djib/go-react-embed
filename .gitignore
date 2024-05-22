@@ -16,6 +16,9 @@ tmp
 *.exe
 *.db
 
+*.crt
+*.key
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

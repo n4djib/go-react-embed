@@ -87,6 +87,12 @@ go get github.com/go-playground/validator/v10
 = add email
 
 
+= generate keys
+"C:\Program Files\OpenSSL-Win64\bin\openssl" req -x509 -newkey rsa:2048 -nodes -keyout server.key -out server.crt -days 365
+
+
+
+
 
 ==================
 - database file should be embeded in exe (as a starting db)
