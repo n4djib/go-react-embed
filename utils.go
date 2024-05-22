@@ -22,35 +22,34 @@ func initAndLoadEnv() error {
 	if err != nil {
 		return err
 	}
-
 	err = godotenv.Load(".env")
 	return err
 }
 
 func createEnvFile() error {
 	// check if file exist
-	if _, err := os.Stat(".env"); errors.Is(err, os.ErrNotExist) {
-		// create .env file
-		f, err := os.Create(".env")
-		if err != nil {
-			return err
-		}
-		defer f.Close()
+	_, err := os.Stat(".env"); 
+	if !errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	
+	// create .env file
+	f, err := os.Create(".env")
+	if err != nil {
+		return err
+	}
+	defer f.Close()
 
-		fmt.Println("Creating .env File...")
+	fmt.Println("Creating .env File...")
 
-		ENV_VARIABLES := `
+	ENV_VARIABLES := `
 APP_URL="https://localhost"
 APP_PORT="8080"
 DEV_PORT="8081"
 DATABASE="./go-react-embed.db"
 `
-		_, err = f.WriteString(ENV_VARIABLES)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+	_, err = f.WriteString(ENV_VARIABLES)
+	return err
 }
 
 func openBrowser(url string) error {
