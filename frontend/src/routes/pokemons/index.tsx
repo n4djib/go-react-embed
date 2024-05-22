@@ -33,6 +33,7 @@ export const Route = createFileRoute("/pokemons/")({
 
 function Pokemons() {
   const { limit, offset } = Route.useSearch();
+  // const navigate = useNavigate();
 
   const {
     data: pokemons,
@@ -44,8 +45,6 @@ function Pokemons() {
   useEffect(() => {
     refetch();
   }, [limit, offset]);
-
-  // const navigate = useNavigate();
 
   // onClick={() => {
   //   navigate({
