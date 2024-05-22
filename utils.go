@@ -47,6 +47,8 @@ APP_URL="https://localhost"
 APP_PORT="8080"
 DEV_PORT="8081"
 DATABASE="./go-react-embed.db"
+SERVER_CRT="server.crt"
+SERVER_KEY="server.key"
 `
 	_, err = f.WriteString(ENV_VARIABLES)
 	return err
@@ -100,4 +102,15 @@ func initDatabaseModels() {
 	queries := models.New(db)
 	// assign to global variables in models package
 	models.DB, models.CTX, models.QUERIES = db, ctx, queries
+}
+
+func checkSSLFilesExist(SERVER_CRT string, SERVER_KEY string) {
+	_, err1 := os.Stat(SERVER_CRT);
+	if errors.Is(err1, os.ErrNotExist) {
+		log.Fatal("Can't find file: ", SERVER_CRT, "\n", err1)
+	}
+	_, err2 := os.Stat("server.key");
+	if errors.Is(err2, os.ErrNotExist) {
+		log.Fatal("Can't find file: ", SERVER_KEY, "\n", err2)
+	}
 }

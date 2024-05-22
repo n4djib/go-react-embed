@@ -46,9 +46,17 @@ func main () {
 		log.Fatal("Problem Openning the browser\n", err)
 	}
 
+	// FIXME echo: http: TLS handshake error from [::1]:53417: remote error: tls: unknown certificate
+	// happens when starting the server
+
+	// check if file "server.crt", "server.key" exist
+	SERVER_CRT := os.Getenv("SERVER_CRT")
+	SERVER_KEY := os.Getenv("SERVER_KEY")
+	checkSSLFilesExist(SERVER_CRT, SERVER_KEY)
+
 	// start server 
-	// e.Logger.Fatal(e.Start(":"+os.Getenv("APP_PORT")))
-	e.Logger.Fatal(e.StartTLS(":"+os.Getenv("APP_PORT"), "server.crt", "server.key"))
+	err = e.StartTLS(":"+os.Getenv("APP_PORT"), SERVER_CRT, SERVER_KEY)
+	e.Logger.Fatal(err)
 }
 
 // Custom logging middleware
