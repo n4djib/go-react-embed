@@ -79,16 +79,28 @@ sqlc generate
 go get github.com/go-playground/validator/v10
 
 
-
-
-
-
-
-= add email
-
-
-= generate keys
+== generate keys
 "C:\Program Files\OpenSSL-Win64\bin\openssl" req -x509 -newkey rsa:2048 -nodes -keyout server.key -out server.crt -days 365
+
+
+
+gofmt -d main.go    // display
+gofmt -w main.go    // overwrite
+
+go get -u golang.org/x/lint/golint
+    installed but didn't work
+
+
+
+
+== Authentication
+go get golang.org/x/crypto/bcrypt
+go get github.com/golang-jwt/jwt/v5
+
+
+
+
+
 
 
 
@@ -102,7 +114,7 @@ go get github.com/go-playground/validator/v10
 - create AUTH system
 - Badger & Bolt
   LMDB in memory is faster
-- 
+- add email
 - 
 
 ===================
