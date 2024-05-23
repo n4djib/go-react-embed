@@ -26,35 +26,8 @@ func initAndLoadEnv() error {
 	return err
 }
 
-func createEnvFile() error {
-	// check if file exist
-	_, err := os.Stat(".env"); 
-	if !errors.Is(err, os.ErrNotExist) {
-		return nil
-	}
-	
-	// create .env file
-	f, err := os.Create(".env")
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	fmt.Println("Creating .env File...")
-
-	ENV_VARIABLES := `
-APP_URL="https://localhost"
-APP_PORT="8080"
-DEV_PORT="8081"
-DATABASE="./go-react-embed.db"
-SERVER_CRT="server.crt"
-SERVER_KEY="server.key"
-`
-	_, err = f.WriteString(ENV_VARIABLES)
-	return err
-}
-
-func openBrowser(url string) error {
+func openBrowser() error {
+	url := os.Getenv("APP_URL") + ":" + os.Getenv("APP_PORT")
 	// grab flag
 	air_flag := flag.Bool("air", false, "detect if run by AIR")
 	flag.Parse()
@@ -80,7 +53,7 @@ func openURL(url string) error {
 	default:
 		cmd = exec.Command("xdg-open", url)
 	}
-
+	
 	return cmd.Start()
 }
 
@@ -104,13 +77,41 @@ func initDatabaseModels() {
 	models.DB, models.CTX, models.QUERIES = db, ctx, queries
 }
 
-func checkSSLFilesExist(SERVER_CRT string, SERVER_KEY string) {
-	_, err1 := os.Stat(SERVER_CRT);
-	if errors.Is(err1, os.ErrNotExist) {
-		log.Fatal("Can't find file: ", SERVER_CRT, "\n", err1)
+func checkSSLFilesExist(SERVER_CRT string, SERVER_KEY string) error {
+	if _, err := os.Stat(SERVER_CRT); errors.Is(err, os.ErrNotExist) {
+		return errors.New("Can't find file: " + SERVER_CRT)
 	}
-	_, err2 := os.Stat("server.key");
-	if errors.Is(err2, os.ErrNotExist) {
-		log.Fatal("Can't find file: ", SERVER_KEY, "\n", err2)
+	if _, err := os.Stat("server.key"); errors.Is(err, os.ErrNotExist) {
+		return errors.New("Can't find file: " + SERVER_KEY)
 	}
+	return nil
+}
+
+func createEnvFile() error {
+	// check if file exist
+	_, err := os.Stat(".env"); 
+	if !errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	
+	// create .env file
+	f, err := os.Create(".env")
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	fmt.Println("Creating .env File...")
+
+	// dev url and port are not needed after build
+	ENV_VARIABLES := `
+MODE="PRODUCTION"
+APP_URL="https://localhost"
+APP_PORT="8080"
+DATABASE="./go-react-embed.db"
+SERVER_CRT="server.crt"
+SERVER_KEY="server.key"
+`
+	_, err = f.WriteString(ENV_VARIABLES)
+	return err
 }

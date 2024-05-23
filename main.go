@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"go-react-embed/api"
 	"go-react-embed/frontend"
 	"log"
@@ -14,7 +15,7 @@ import (
 
 func main () {
 	// load .env file
-	err := initAndLoadEnv() // change it to initEnv
+	err := initAndLoadEnv()
 	if err != nil {
 		log.Fatal("Problem Loading .env\n", err)
 	}
@@ -26,12 +27,14 @@ func main () {
 	e := echo.New()
 	// middlewares
 	e.Use(loggingMiddleware)
-	// e.Use(middleware.BodyDump(bodyDump))
 	e.Pre(middleware.RemoveTrailingSlash())
 	// CORS
 	useCORSMiddleware(e)
+	if os.Getenv("MODE") == "DEV" {
+		e.Use(middleware.BodyDump(bodyDump))
+	}
 
-	// registerign bachend routes routes
+	// registering bachend routes routes
 	e.GET("/api", root)
 	api.RegisterPokemonsHandlers(e.Group("/api"))
 	api.RegisterUsersHandlers(e.Group("/api"))
@@ -39,24 +42,28 @@ func main () {
 	// register react static pages build from react tanstack router
 	frontend.RegisterHandlers(e)
 
-	// open app url
-	url := os.Getenv("APP_URL") + ":" + os.Getenv("APP_PORT")
-	err = openBrowser(url)
+	// open browser to APP url https://localhost:8080
+	err = openBrowser()
 	if err != nil {
-		log.Fatal("Problem Openning the browser\n", err)
+		log.Fatal("Problem Opening the browser\n", err)
 	}
 
-	// FIXME echo: http: TLS handshake error from [::1]:53417: remote error: tls: unknown certificate
-	// happens when starting the server
-
+	// FIXME these files must exit or the app will crash
+	// embed them (self-signed)
 	// check if file "server.crt", "server.key" exist
 	SERVER_CRT := os.Getenv("SERVER_CRT")
 	SERVER_KEY := os.Getenv("SERVER_KEY")
-	checkSSLFilesExist(SERVER_CRT, SERVER_KEY)
+	err = checkSSLFilesExist(SERVER_CRT, SERVER_KEY)
+	if err != nil {
+		log.Fatal("SSL files not found\n", err)
+	}
 
+	// FIXME echo: http: TLS handshake error from [::1]:49955:
 	// start server 
-	err = e.StartTLS(":"+os.Getenv("APP_PORT"), SERVER_CRT, SERVER_KEY)
-	e.Logger.Fatal(err)
+	e.Logger.Fatal(e.StartTLS(":"+os.Getenv("APP_PORT"), SERVER_CRT, SERVER_KEY))
+
+	// run without SSL mode
+	// e.Logger.Fatal(e.Start(":"+os.Getenv("APP_PORT")))
 }
 
 // Custom logging middleware
@@ -71,20 +78,22 @@ func loggingMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-// func bodyDump(c echo.Context, reqBody, resBody []byte) {
-// 	fmt.Println("reqBody::", string(reqBody))
-// 	fmt.Println("resBody::", string(resBody))
-// }
+func bodyDump(c echo.Context, reqBody, resBody []byte) {
+	fmt.Println("reqBody::", string(reqBody))
+	fmt.Println("resBody::", string(resBody))
+}
 
 func useCORSMiddleware(e *echo.Echo) {
+	allowOrigins := []string{os.Getenv("APP_URL")+":"+os.Getenv("APP_PORT")}
+	if os.Getenv("MODE") == "DEV" {
+		allowOrigins = append(allowOrigins, os.Getenv("APP_URL_DEV")+":"+os.Getenv("APP_PORT_DEV"))
+	}
+	
+	allowMethods := []string{echo.GET, echo.PUT, echo.POST, echo.DELETE}
+
 	corsConfig := middleware.CORSConfig{
-		AllowOrigins: []string{
-			os.Getenv("APP_URL")+":"+os.Getenv("APP_PORT"), 
-			os.Getenv("APP_URL")+":"+os.Getenv("DEV_PORT"),
-		},
-		AllowMethods: []string{
-			echo.GET, echo.PUT, echo.POST, echo.DELETE,
-		},
+		AllowOrigins: allowOrigins,
+		AllowMethods: allowMethods,
 	}
 	e.Use(middleware.CORSWithConfig(corsConfig))
 }

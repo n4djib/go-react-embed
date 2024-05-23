@@ -101,6 +101,7 @@ go get github.com/go-playground/validator/v10
 - script to build react when building GO
 - create AUTH system
 - Badger & Bolt
+  LMDB in memory is faster
 - 
 - 
 
