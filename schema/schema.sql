@@ -7,8 +7,8 @@ CREATE TABLE IF NOT EXISTS users(
   created_at DATETIME DEFAULT (CURRENT_TIMESTAMP) 
 );
 
-REPLACE INTO users (id, name, password) values (1, "n4djib", "long one");
-REPLACE INTO users (id, name, password) values (2, "nad", "ddddd");
+REPLACE INTO users (id, name, password) values (1, "n4djib", "$2a$10$D37JXHtApnRcfq5S77im/OL4/f0GHwDEEMuZGlJbtjX.a15aUx8r6");
+REPLACE INTO users (id, name, password) values (2, "nad", "$2a$10$D37JXHtApnRcfq5S77im/OL4/f0GHwDEEMuZGlJbtjX.a15aUx8r6");
 
 CREATE TABLE IF NOT EXISTS pokemons (
     id    INTEGER PRIMARY KEY AUTOINCREMENT,
