@@ -14,7 +14,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
-func main () {
+func main() {
 	// load .env file
 	err := initAndLoadEnv()
 	if err != nil {
@@ -23,7 +23,7 @@ func main () {
 
 	// create DB and Tables and initialize Globals
 	initDatabaseModels()
-	
+
 	// create echo app
 	e := echo.New()
 	// middlewares
@@ -39,7 +39,7 @@ func main () {
 	e.GET("/ping", pong)
 	api.RegisterPokemonsHandlers(e.Group("/api"))
 	api.RegisterUsersHandlers(e.Group("/api"))
-	
+
 	// register react static pages build from react tanstack router
 	frontend.RegisterHandlers(e)
 
@@ -59,7 +59,7 @@ func main () {
 
 	// FIXME echo: http: TLS handshake error from [::1]:49955:
 	// TODO hide the banner
-	// start server 
+	// start server
 	e.Logger.Fatal(e.StartTLS(":"+os.Getenv("APP_PORT"), SERVER_CRT, SERVER_KEY))
 }
 
@@ -81,11 +81,11 @@ func bodyDump(c echo.Context, reqBody, resBody []byte) {
 }
 
 func useCORSMiddleware(e *echo.Echo) {
-	allowOrigins := []string{os.Getenv("APP_URL")+":"+os.Getenv("APP_PORT")}
+	allowOrigins := []string{os.Getenv("APP_URL") + ":" + os.Getenv("APP_PORT")}
 	if os.Getenv("MODE") == "DEV" {
 		allowOrigins = append(allowOrigins, os.Getenv("APP_URL_DEV")+":"+os.Getenv("APP_PORT_DEV"))
 	}
-	
+
 	allowMethods := []string{echo.GET, echo.PUT, echo.POST, echo.DELETE}
 
 	corsConfig := middleware.CORSConfig{

@@ -22,7 +22,7 @@ import (
 var ddl string
 
 func initAndLoadEnv() error {
-	_, err := os.Stat(".env"); 
+	_, err := os.Stat(".env")
 	if errors.Is(err, os.ErrNotExist) {
 		err := createENV(".env")
 		if err != nil {
@@ -30,7 +30,7 @@ func initAndLoadEnv() error {
 		}
 	}
 
-	// load it 
+	// load it
 	return godotenv.Load(".env")
 }
 
@@ -90,7 +90,7 @@ func openURL(url string) error {
 	default:
 		cmd = exec.Command("xdg-open", url)
 	}
-	
+
 	return cmd.Start()
 }
 

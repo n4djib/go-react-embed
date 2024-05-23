@@ -16,16 +16,16 @@ var (
 	//go:embed src/routeTree.gen.ts
 	routeTreeFS embed.FS
 
-	distDirFS = echo.MustSubFS(dist, "dist")
+	distDirFS     = echo.MustSubFS(dist, "dist")
 	distIndexHtml = echo.MustSubFS(indexHTML, "dist")
 )
 
 func RegisterHandlers(e *echo.Echo) {
 	file := "src/routeTree.gen.ts"
 	routes, err := collectRoutes(routeTreeFS, file)
-    if err != nil {
-        log.Fatal("couldn't collect routes from ", file, "\n", err)
-    }
+	if err != nil {
+		log.Fatal("couldn't collect routes from ", file, "\n", err)
+	}
 	newRoutes := modifyRoutes(routes)
 	// fmt.Println("newRoutes:", newRoutes)
 
@@ -37,7 +37,7 @@ func RegisterHandlers(e *echo.Echo) {
 	// e.FileFS("/", "index.html", distIndexHtml)
 	// e.FileFS("/profile", "index.html", distIndexHtml)
 	// e.FileFS("/pokemons/*", "index.html", distIndexHtml)
-	
+
 	e.StaticFS("/", distDirFS)
 }
 
@@ -45,10 +45,10 @@ func collectRoutes(fileFS embed.FS, file string) ([]string, error) {
 	routes := []string{}
 
 	dat, err := fileFS.ReadFile(file)
-    if err != nil {
-        return nil, err
-    }
-	
+	if err != nil {
+		return nil, err
+	}
+
 	// regexp '/route':
 	// r := regexp.MustCompile(`"([^{}]*)":`)
 	r := regexp.MustCompile(`'([^{}]*)':`)
@@ -82,7 +82,7 @@ func removeParams(route string) string {
 
 	if len(found_dollar) > 0 {
 		start := found_dollar[0]
-		url_after_dolar := route[start : ]
+		url_after_dolar := route[start:]
 
 		reg_slash := regexp.MustCompile(`/`)
 		found_slash := reg_slash.FindStringIndex(url_after_dolar)
@@ -90,11 +90,11 @@ func removeParams(route string) string {
 		// end := len(url_after_dolar)
 		if len(found_slash) > 0 {
 			end := found_slash[0]
-			newRoute = route[ : start] + "*" +  route[start+end : ]
+			newRoute = route[:start] + "*" + route[start+end:]
 		} else {
-			newRoute = route[ : start] + "*"
+			newRoute = route[:start] + "*"
 		}
-			
+
 		// if it contains $ run it again
 		found_another_dollar := reg_dollar.FindStringIndex(newRoute)
 		if len(found_another_dollar) > 0 {
@@ -107,8 +107,8 @@ func removeParams(route string) string {
 
 func removeTrailingSlash(route string) string {
 	if len(route) > 1 {
-		if route[ len(route)-1 : ] == "/" {
-			return route[ : len(route)-1 ]
+		if route[len(route)-1:] == "/" {
+			return route[:len(route)-1]
 		}
 	}
 	return route

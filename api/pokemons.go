@@ -44,10 +44,10 @@ func getPokemonsHandler(c echo.Context) error {
 		})
 	}
 	data := DataList{
-		Count: len(allPokemonsNames),
-		Limit: int(limit),
+		Count:  len(allPokemonsNames),
+		Limit:  int(limit),
 		Offset: int(offset),
-		Data: pokemons,
+		Data:   pokemons,
 	}
 	return c.JSON(http.StatusOK, data)
 }

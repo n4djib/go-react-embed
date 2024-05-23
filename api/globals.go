@@ -10,10 +10,10 @@ type Data struct {
 }
 
 type DataList struct {
-	Count    int         `json:"count"`
-	Limit    int         `json:"limit"`
-	Offset   int         `json:"offset"`
-	Data     interface{} `json:"data"`
+	Count  int         `json:"count"`
+	Limit  int         `json:"limit"`
+	Offset int         `json:"offset"`
+	Data   interface{} `json:"data"`
 }
 
 type Error struct {
@@ -24,4 +24,3 @@ type Status struct {
 	Message string      `json:"message"`
 	Data    interface{} `json:"data"`
 }
-

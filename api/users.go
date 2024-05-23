@@ -27,7 +27,7 @@ func getUsersHandler(c echo.Context) error {
 	}
 	data := DataList{
 		Count: len(users),
-		Data: users,
+		Data:  users,
 	}
 	return c.JSON(http.StatusOK, data)
 }
@@ -88,7 +88,7 @@ func createUserHandler(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, Status{
 		Message: "created successfully",
-		Data: user,
+		Data:    user,
 	})
 }
 
@@ -113,7 +113,7 @@ func updateUserHandler(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, Status{
 		Message: "updated successfully",
-		Data: user,
+		Data:    user,
 	})
 }
 
@@ -138,7 +138,7 @@ func updateUserActiveStateHandler(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, Status{
 		Message: "updated status successfully",
-		Data: user,
+		Data:    user,
 	})
 }
 
