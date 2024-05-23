@@ -82,7 +82,7 @@ func bodyDump(c echo.Context, reqBody, resBody []byte) {
 
 func useCORSMiddleware(e *echo.Echo) {
 	allowOrigins := []string{os.Getenv("APP_URL") + ":" + os.Getenv("APP_PORT")}
-	if os.Getenv("MODE") == "DEV" {
+	if os.Getenv("MODE") != "PRODUCTION" {
 		allowOrigins = append(allowOrigins, os.Getenv("APP_URL_DEV")+":"+os.Getenv("APP_PORT_DEV"))
 	}
 

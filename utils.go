@@ -22,16 +22,16 @@ import (
 var ddl string
 
 func initAndLoadEnv() error {
-	_, err := os.Stat(".env")
+	_, err := os.Stat(".env.local")
 	if errors.Is(err, os.ErrNotExist) {
-		err := createENV(".env")
+		err := createENV(".env.local")
 		if err != nil {
 			return err
 		}
 	}
 
 	// load it
-	return godotenv.Load(".env")
+	return godotenv.Load(".env.local")
 }
 
 func createENV(out string) error {
@@ -40,7 +40,8 @@ APP_URL="https://localhost"
 APP_PORT="8080"
 DATABASE="./go-react-embed.db"
 SERVER_CRT="server.crt"
-SERVER_KEY="server.key"`
+SERVER_KEY="server.key"
+JWT_SECRET="this is the secret used to sign the JWT"`
 
 	fmt.Println("creating ", out)
 	return writeFile(out, CONTENT)
