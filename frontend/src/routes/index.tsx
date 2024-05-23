@@ -12,7 +12,7 @@ function Index() {
   const [data, setData] = useState<string>("");
 
   const fetchData = async () => {
-    const response = await fetch(baseUrl + "/api");
+    const response = await fetch(baseUrl + "/ping");
     const data = await response.text();
     setData(data);
   };
@@ -24,7 +24,7 @@ function Index() {
   return (
     <>
       <h1 className="text-2xl font-bold">Home Page</h1>
-      <div>Data fetched from (/api) : {data}</div>
+      <div>Data fetched from (/ping) : {data}</div>
       <br />
       <div className="flex w-max gap-2">
         <Button color="indigo" onClick={fetchData}>

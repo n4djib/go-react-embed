@@ -36,7 +36,7 @@ func main () {
 	// }
 
 	// registering bachend routes routes
-	e.GET("/api", root)
+	e.GET("/ping", pong)
 	api.RegisterPokemonsHandlers(e.Group("/api"))
 	api.RegisterUsersHandlers(e.Group("/api"))
 	
@@ -95,10 +95,10 @@ func useCORSMiddleware(e *echo.Echo) {
 	e.Use(middleware.CORSWithConfig(corsConfig))
 }
 
-func root(ctx echo.Context) error {
+func pong(ctx echo.Context) error {
 	// Defining data
 	data := map[string]string{
-		"data": "Hello, Gophers.",
+		"message": "Pong!",
 	}
 	return ctx.JSON(http.StatusOK, data)
 }
