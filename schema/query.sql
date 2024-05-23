@@ -7,6 +7,9 @@ SELECT id, name, is_active, created_at FROM users WHERE name = ? LIMIT 1;
 -- name: GetUserWithPassword :one
 SELECT * FROM users WHERE id = ? LIMIT 1;
 
+-- name: GetUserByNameWithPassword :one
+SELECT * FROM users WHERE name = ? LIMIT 1;
+
 -- name: ListUsers :many
 SELECT id, name, is_active, created_at FROM users ORDER BY id;
 
