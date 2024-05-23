@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "embed"
 	"fmt"
 	"go-react-embed/api"
 	"go-react-embed/frontend"
@@ -30,9 +31,9 @@ func main () {
 	e.Pre(middleware.RemoveTrailingSlash())
 	// CORS
 	useCORSMiddleware(e)
-	if os.Getenv("MODE") == "DEV" {
-		e.Use(middleware.BodyDump(bodyDump))
-	}
+	// if os.Getenv("MODE") == "DEV" {
+	// 	e.Use(middleware.BodyDump(bodyDump))
+	// }
 
 	// registering bachend routes routes
 	e.GET("/api", root)
@@ -48,8 +49,6 @@ func main () {
 		log.Fatal("Problem Opening the browser\n", err)
 	}
 
-	// FIXME these files must exit or the app will crash
-	// embed them (self-signed)
 	// check if file "server.crt", "server.key" exist
 	SERVER_CRT := os.Getenv("SERVER_CRT")
 	SERVER_KEY := os.Getenv("SERVER_KEY")
@@ -59,11 +58,9 @@ func main () {
 	}
 
 	// FIXME echo: http: TLS handshake error from [::1]:49955:
+	// TODO hide the banner
 	// start server 
 	e.Logger.Fatal(e.StartTLS(":"+os.Getenv("APP_PORT"), SERVER_CRT, SERVER_KEY))
-
-	// run without SSL mode
-	// e.Logger.Fatal(e.Start(":"+os.Getenv("APP_PORT")))
 }
 
 // Custom logging middleware
