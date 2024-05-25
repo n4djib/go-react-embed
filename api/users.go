@@ -17,7 +17,6 @@ func RegisterUsersHandlers(e *echo.Group) {
 	e.GET("/users", getUsersHandler, AuthenticatedMiddleware)
 	e.GET("/users/:id", getUserHandler)
 	e.GET("/users/name/:name", getUserByNameHandler)
-	// e.POST("/users", createUserHandler)
 	e.PUT("/users", updateUserHandler)
 	e.DELETE("/users/:id", deleteUserHandler)
 	e.PUT("/users/active-state", updateUserActiveStateHandler)
@@ -29,11 +28,8 @@ func RegisterUsersHandlers(e *echo.Group) {
 	e.GET("/auth/signout", signout)
 
 	// TODO
-	// signout
-	//    remove session
-	//    delete cookie
 	// forgoten password
-	// edit user & password
+	// add a check username exist 
 }
 
 func signup(c echo.Context) error {
@@ -65,13 +61,13 @@ func signup(c echo.Context) error {
 	// check password strength
 
 	// hash password
-	hash, err := bcrypt.GenerateFromPassword([]byte(body.Password), 10)
+	hash, err := hashPassword(body.Password)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, Error{
 			Error: "Failed to hash password",
 		})
 	}
-	body.Password = string(hash)
+	body.Password = hash
 
 	// insert it
 	user, err := models.QUERIES.CreateUser(models.CTX, body)
@@ -84,6 +80,14 @@ func signup(c echo.Context) error {
 		Message: "Signed up successfully",
 		Data:    user,
 	})
+}
+
+func hashPassword(str string) (string, error) {
+	hash, err := bcrypt.GenerateFromPassword([]byte(str), 10)
+	if err != nil {
+		return "", err
+	}
+	return string(hash), nil
 }
 
 type UserClaim struct {
@@ -320,6 +324,15 @@ func updateUserHandler(c echo.Context) error {
 			Error: err.Error(),
 		})
 	}
+
+	hash, err := hashPassword(body.Password)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, Error{
+			Error: "Failed to hash password",
+		})
+	}
+	body.Password = hash
+
 	user, err := models.QUERIES.UpdateUser(models.CTX, body)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, Error{
