@@ -15,7 +15,7 @@ POST {{baseUrl}}/api/auth/signin
 Content-Type: application/json
 
 {
-    "name": "n4djib5",
+    "name": "nad",
     "password": "123456"
 }
 
@@ -40,7 +40,7 @@ Accept: application/json
 ### get user by name
 {{baseUrl}}/api/users/name/nadjib
 
-### Update user
+### Update user (even the password)
 PUT https://localhost:8080/api/users
 Content-Type: application/json
 
@@ -57,10 +57,4 @@ Content-Type: application/json
 
 
 # PUT users/active-state
-
-
-
-
-Tutorial
-https://medium.com/lseg-developer-community/how-to-test-rest-api-with-visual-studio-code-rest-client-extensions-9f2e061d0299
 
