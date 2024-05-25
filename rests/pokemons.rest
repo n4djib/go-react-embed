@@ -1,0 +1,16 @@
+@baseUrl = https://localhost:8080
+
+
+### get all pokemons
+GET {{baseUrl}}/api/pokemons
+
+### get all pokemons with limit and offset
+{{baseUrl}}/api/pokemons?limit=3&offset=0
+
+### get pokemon by id
+{{baseUrl}}/api/pokemons/2
+
+### get pokemon by name
+{{baseUrl}}/api/pokemons/name/bulbasaur
+
+

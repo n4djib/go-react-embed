@@ -1,0 +1,66 @@
+@baseUrl = https://localhost:8080
+
+
+### Signup
+POST {{baseUrl}}/api/auth/signup
+Content-Type: application/json
+
+{
+    "name": "n4djib5",
+    "password": "123456"
+}
+
+### Signin (login)
+POST {{baseUrl}}/api/auth/signin
+Content-Type: application/json
+
+{
+    "name": "n4djib5",
+    "password": "123456"
+}
+
+### Validate (check cookie)
+{{baseUrl}}/api/auth/validate-token
+
+### get all users (testing authenticated)
+{{baseUrl}}/api/users
+
+### Signout (logout)
+{{baseUrl}}/api/auth/signout
+
+
+
+### get all users
+{{baseUrl}}/api/users
+Accept: application/json
+
+### get user by id
+{{baseUrl}}/api/users/2
+
+### get user by name
+{{baseUrl}}/api/users/name/nadjib
+
+### Update user
+PUT https://localhost:8080/api/users
+Content-Type: application/json
+
+{
+    "id": 2,
+    "name" : "nad",
+    "password": "123456",
+    "is_active": true
+}
+
+
+
+# DELETE /users/:id
+
+
+# PUT users/active-state
+
+
+
+
+Tutorial
+https://medium.com/lseg-developer-community/how-to-test-rest-api-with-visual-studio-code-rest-client-extensions-9f2e061d0299
+
