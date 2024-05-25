@@ -57,7 +57,7 @@ func initDatabaseModels() {
 	// createTables
 	ctx := context.Background()
 	if _, err := db.ExecContext(ctx, ddl); err != nil {
-		log.Fatal("Table Cretation error\n", err)
+		log.Fatal("Table Creation error\n", err)
 	}
 	queries := models.New(db)
 	// assign to global variables in models package
