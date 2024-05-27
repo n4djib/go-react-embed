@@ -56,7 +56,7 @@ func signup(c echo.Context) error {
 		})
 	}
 
-	// check password strength
+	// TODO check password strength
 
 	// hash password
 	hash, err := hashPassword(body.Password)
