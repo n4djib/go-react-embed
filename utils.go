@@ -41,7 +41,8 @@ APP_PORT="8080"
 DATABASE="./go-react-embed.db"
 SERVER_CRT="server.crt"
 SERVER_KEY="server.key"
-JWT_SECRET="this is the secret used to sign the JWT"`
+COOKIE_EXP_MINUTES=1440    # 24h
+`
 
 	fmt.Println("creating ", out)
 	return writeFile(out, CONTENT)
