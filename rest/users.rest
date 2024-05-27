@@ -6,7 +6,7 @@ POST {{baseUrl}}/api/auth/signup
 Content-Type: application/json
 
 {
-    "name": "n4djib5",
+    "name": "n4djib3",
     "password": "123456"
 }
 
@@ -15,18 +15,26 @@ POST {{baseUrl}}/api/auth/signin
 Content-Type: application/json
 
 {
-    "name": "nad",
+    "name": "n4djib3",
     "password": "123456"
 }
 
-### Validate (check cookie)
-{{baseUrl}}/api/auth/validate-token
+### Activate User
+PUT {{baseUrl}}/api/users/active-state
+Content-Type: application/json
+
+{
+    "id": 3,
+    "is_active": true
+}
 
 ### get all users (testing authenticated)
 {{baseUrl}}/api/users
 
 ### Signout (logout)
 {{baseUrl}}/api/auth/signout
+
+
 
 
 

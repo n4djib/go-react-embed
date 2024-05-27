@@ -1,14 +1,13 @@
 package api
 
 import (
-	"errors"
 	"go-react-embed/models"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -24,12 +23,11 @@ func RegisterUsersHandlers(e *echo.Group) {
 	
 	e.POST("/auth/signup", signup)
 	e.POST("/auth/signin", signin)
-	e.GET("/auth/validate-token", validateToken) // TODO remove this
 	e.GET("/auth/signout", signout)
 
 	// TODO
 	// forgoten password
-	// add a check username exist 
+	// add a check username exist to ue at signup
 }
 
 func signup(c echo.Context) error {
@@ -68,6 +66,10 @@ func signup(c echo.Context) error {
 		})
 	}
 	body.Password = hash
+	
+	// created at time
+	var loggedAt = time.Now()
+	body.CreatedAt = &loggedAt
 
 	// insert it
 	user, err := models.QUERIES.CreateUser(models.CTX, body)
@@ -90,12 +92,6 @@ func hashPassword(str string) (string, error) {
 	return string(hash), nil
 }
 
-type UserClaim struct {
-    Sub int64 `json:"sub"`
-    Exp int64 `json:"exp"`
-    jwt.RegisteredClaims
-}
-
 func signin(c echo.Context) error {
 	var body models.CreateUserParams
 	if err := c.Bind(&body); err != nil {
@@ -112,9 +108,17 @@ func signin(c echo.Context) error {
 
 	// check user name exist
 	user, err := models.QUERIES.GetUserByNameWithPassword(models.CTX, body.Name)
-	if err != nil || user.ID == 0 {
+	if err != nil {
 		return c.JSON(http.StatusInternalServerError, Error{
 			Error: "user name or password are incorrect 1",
+		})
+	}
+
+	// check if user is active
+	is_active := *user.IsActive
+	if !is_active {
+		return c.JSON(http.StatusBadRequest, Error{
+			Error: "User is not Active",
 		})
 	}
 
@@ -126,81 +130,45 @@ func signin(c echo.Context) error {
 		})
 	}
 
-	// 
-	secret := os.Getenv("JWT_SECRET")
-	exp :=  time.Now().Add(time.Hour * 24 * 30).Unix()
+	var updateSession models.UpdateUserSessionParams
+	var loggedAt = time.Now()
+	session_uuid := uuid.New().String()
 
-	// generate JWT token
-	signedToken, err := generateUserSignedToken(user, secret, exp)
+	updateSession.ID = user.ID
+	updateSession.Session = &session_uuid
+	updateSession.LoggedAt = &loggedAt
+
+	// put session in user table
+	err = models.QUERIES.UpdateUserSession(models.CTX, updateSession)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, Error{
 			Error: err.Error(),
 		})
 	}
 
-	expiration := time.Now().Add(24 * time.Hour)
+	// 24 hours (1440 minutes)
+	COOKIE_EXP_MINUTES := os.Getenv("COOKIE_EXP_MINUTES")
+	if len(COOKIE_EXP_MINUTES) < 1 {
+		return c.JSON(http.StatusInternalServerError, Error{
+			Error: "COOKIE_EXP_MINUTES, can't be found.",
+		})
+	}
+	// convert to int
+	expMinutes, err := strconv.ParseInt(COOKIE_EXP_MINUTES, 10, 64)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, Error{
+			Error: "COOKIE_EXP_MINUTES, can't be converted," + err.Error(),
+		})
+	}
+	expiration := time.Now().Add(time.Minute * time.Duration(expMinutes))
 	// creating cookies
-	cookie := createCookie("Authorization", signedToken, expiration)
+	cookie := createCookie("Authorization", session_uuid, expiration)
 	// set cookies
 	c.SetCookie(cookie)
 
 	user.Password = "[HIDDEN]"
 	return c.JSON(http.StatusOK, echo.Map{
 		"Message": "Sign in successfully",
-		// "Data": user,  // we should return JWT
-		"token": signedToken,
-	})
-}
-
-func generateUserSignedToken(user models.User, secret string, expiry int64) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, UserClaim{
-		RegisteredClaims: jwt.RegisteredClaims{},
-		Sub: user.ID,
-		Exp: expiry,
-	})
-	// sign the token and encode a a string
-	signedToken, err := token.SignedString([]byte(secret))
-	if err != nil {
-		return "", errors.New("Failed to create token\n "+ err.Error())
-	}
-	return signedToken, nil
-}
-
-func parseSignedToken(signedToken string, secret string) (UserClaim, error) {
-	var userClaim UserClaim
-	token, err := jwt.ParseWithClaims(signedToken, &userClaim, func(token *jwt.Token) (interface{}, error) {
-		return []byte(secret), nil
-	})
-	if err != nil {
-		return UserClaim{}, err
-	}
-	// Checking token validity 
-	if !token.Valid {
-		return UserClaim{}, errors.New("token is not valid!")
-	}
-	return userClaim, nil
-}
-
-func validateToken(c echo.Context) error {
-	cookie, err := c.Cookie("Authorization")
-	if err != nil {
-		return c.JSON(http.StatusOK, Error{
-			Error: "Cookie not found, " + err.Error(),
-		})
-	}
-
-	secret := os.Getenv("JWT_SECRET")
-	signedToken := cookie.Value
-	userClam, err := parseSignedToken(signedToken , secret)
-	if err != nil {
-		return c.JSON(http.StatusOK, Error{
-			Error: "Failed to validate token, " + err.Error(),
-		})
-	}
-
-	return c.JSON(http.StatusOK, echo.Map{
-		"Message": "Token is valid",
-		"User ID": userClam.Sub,
 	})
 }
 
@@ -209,28 +177,51 @@ func AuthenticatedMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		cookie, err := c.Cookie("Authorization")
 		if err != nil {
-			return echo.NewHTTPError(http.StatusForbidden, "Cookie not found, " + err.Error())
+			return echo.NewHTTPError(http.StatusForbidden, "Authorization Cookie not found, " + err.Error())
 		}
-		secret := os.Getenv("JWT_SECRET")
-		signedToken := cookie.Value
-		_, err = parseSignedToken(signedToken , secret)
+		
+		session_uuid := cookie.Value  // uuid
+		_, err = models.QUERIES.GetUserBySession(models.CTX, &session_uuid)
 		if err != nil {
-			return echo.NewHTTPError(http.StatusForbidden, "Failed to validate token, " + err.Error())
+			return echo.NewHTTPError(http.StatusInternalServerError, "Failed to find user 1, " + err.Error())
 		}
+
 		return next(c)
 	}
 }
 
 func signout(c echo.Context) error {
-	_, err := c.Cookie("Authorization")
+	cookie, err := c.Cookie("Authorization")
 	if err != nil {
 		return c.JSON(http.StatusOK, Error{
-			Error: "Already Signed out, " + err.Error(),
+			Error: "Already Signed out 1, " + err.Error(),
+		})
+	}
+
+	session_uuid := cookie.Value
+	user, err := models.QUERIES.GetUserBySession(models.CTX, &session_uuid)
+	if err != nil {
+		return c.JSON(http.StatusOK, Error{
+			Error: "Already Signed out 2, " + err.Error(),
+		})
+	}
+
+	// remove session from users table
+	var emptySession models.UpdateUserSessionParams
+	emptySession.ID = user.ID
+	emptySession.Session = nil
+	emptySession.LoggedAt = user.LoggedAt
+
+	err = models.QUERIES.UpdateUserSession(models.CTX, emptySession)
+	if err != nil {
+		return c.JSON(http.StatusOK, Error{
+			Error: "Failed to remove session, " + err.Error(),
 		})
 	}
 
 	// unset cookie
-	c.SetCookie(unsetCookie("Authorization"))
+	deadCookie := createCookie("Authorization", "", time.Unix(0, 0))
+	c.SetCookie(deadCookie)
 
 	return c.JSON(http.StatusOK, echo.Map{
 		"Message": "Sign out successfully",
@@ -245,22 +236,11 @@ func createCookie(name string, value string, timeHoursExpiry time.Time) *http.Co
     cookie.Expires = timeHoursExpiry
     cookie.HttpOnly = true
     cookie.Secure = true
+	if timeHoursExpiry == time.Unix(0, 0) {
+		cookie.MaxAge = -1
+	}
 	return cookie
 }
-
-func unsetCookie(name string) *http.Cookie {
-	cookie := new(http.Cookie)
-    cookie.Name = name
-    cookie.Value = ""
-    cookie.Path = "/"
-    cookie.Expires = time.Unix(0, 0)
-	cookie.MaxAge = -1
-    cookie.HttpOnly = true
-    cookie.Secure = true
-	return cookie
-}
-
-
 
 func getUsersHandler(c echo.Context) error {
 	users, err := models.QUERIES.ListUsers(models.CTX)
@@ -358,7 +338,7 @@ func updateUserActiveStateHandler(c echo.Context) error {
 			Error: err.Error(),
 		})
 	}
-	user, err := models.QUERIES.UpdateUserActiveState(models.CTX, body)
+	err := models.QUERIES.UpdateUserActiveState(models.CTX, body)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, Error{
 			Error: err.Error(),
@@ -366,7 +346,6 @@ func updateUserActiveStateHandler(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, Status{
 		Message: "updated status successfully",
-		Data:    user,
 	})
 }
 

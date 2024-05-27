@@ -99,7 +99,7 @@ go get github.com/golang-jwt/jwt/v5
 
 
 
-
+go get github.com/google/uuid
 
 
 
@@ -115,6 +115,13 @@ go get github.com/golang-jwt/jwt/v5
 - Badger & Bolt
   LMDB in memory is faster
 - add email
+- add config options when starting the app
+- validate env variables
+- 
+- 
+- 
+- 
+- 
 - 
 
 ===================

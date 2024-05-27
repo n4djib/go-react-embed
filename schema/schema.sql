@@ -1,10 +1,16 @@
+-----------------------------------------------------------------------------
+-- Modify the tables directly in the database and reflect it in the schema --
+-----------------------------------------------------------------------------
+
 CREATE TABLE IF NOT EXISTS users(
-  -- id INTEGER PRIMARY KEY AUTOINCREMENT,
+  -- id         INTEGER PRIMARY KEY AUTOINCREMENT,
   id         INTEGER PRIMARY KEY,
   name       TEXT UNIQUE NOT NULL,
   password   TEXT NOT NULL,
   is_active  BOOLEAN DEFAULT (false),
-  created_at DATETIME DEFAULT (CURRENT_TIMESTAMP) 
+  session    TEXT,
+  logged_at  DATETIME,
+  created_at DATETIME
 );
 
 INSERT OR IGNORE INTO users (id, name, password, is_active) VALUES 

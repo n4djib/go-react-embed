@@ -11,29 +11,34 @@ import (
 )
 
 const createUser = `-- name: CreateUser :one
-INSERT INTO users (name, password) VALUES (?, ?)
-RETURNING id, name, is_active, created_at
+INSERT INTO users (name, password, created_at) VALUES (?, ?, ?)
+RETURNING id, name, is_active, session, logged_at, created_at
 `
 
 type CreateUserParams struct {
-	Name     string `db:"name" json:"name" validate:"required"`
-	Password string `db:"password" json:"password" validate:"required"`
+	Name      string     `db:"name" json:"name" validate:"required"`
+	Password  string     `db:"password" json:"password" validate:"required"`
+	CreatedAt *time.Time `db:"created_at" json:"created_at"`
 }
 
 type CreateUserRow struct {
 	ID        int64      `db:"id" json:"id"`
 	Name      string     `db:"name" json:"name" validate:"required"`
 	IsActive  *bool      `db:"is_active" json:"is_active"`
+	Session   *string    `db:"session" json:"session"`
+	LoggedAt  *time.Time `db:"logged_at" json:"logged_at"`
 	CreatedAt *time.Time `db:"created_at" json:"created_at"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error) {
-	row := q.db.QueryRowContext(ctx, createUser, arg.Name, arg.Password)
+	row := q.db.QueryRowContext(ctx, createUser, arg.Name, arg.Password, arg.CreatedAt)
 	var i CreateUserRow
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
 		&i.IsActive,
+		&i.Session,
+		&i.LoggedAt,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -85,13 +90,16 @@ func (q *Queries) GetPokemonWithPassword(ctx context.Context, id int64) (Pokemon
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, name, is_active, created_at FROM users WHERE id = ? LIMIT 1
+SELECT id, name, is_active, session, logged_at, created_at
+  FROM users WHERE id = ? LIMIT 1
 `
 
 type GetUserRow struct {
 	ID        int64      `db:"id" json:"id"`
 	Name      string     `db:"name" json:"name" validate:"required"`
 	IsActive  *bool      `db:"is_active" json:"is_active"`
+	Session   *string    `db:"session" json:"session"`
+	LoggedAt  *time.Time `db:"logged_at" json:"logged_at"`
 	CreatedAt *time.Time `db:"created_at" json:"created_at"`
 }
 
@@ -102,19 +110,24 @@ func (q *Queries) GetUser(ctx context.Context, id int64) (GetUserRow, error) {
 		&i.ID,
 		&i.Name,
 		&i.IsActive,
+		&i.Session,
+		&i.LoggedAt,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const getUserByName = `-- name: GetUserByName :one
-SELECT id, name, is_active, created_at FROM users WHERE name = ? LIMIT 1
+SELECT id, name, is_active, session, logged_at, created_at
+  FROM users WHERE name = ? LIMIT 1
 `
 
 type GetUserByNameRow struct {
 	ID        int64      `db:"id" json:"id"`
 	Name      string     `db:"name" json:"name" validate:"required"`
 	IsActive  *bool      `db:"is_active" json:"is_active"`
+	Session   *string    `db:"session" json:"session"`
+	LoggedAt  *time.Time `db:"logged_at" json:"logged_at"`
 	CreatedAt *time.Time `db:"created_at" json:"created_at"`
 }
 
@@ -125,13 +138,15 @@ func (q *Queries) GetUserByName(ctx context.Context, name string) (GetUserByName
 		&i.ID,
 		&i.Name,
 		&i.IsActive,
+		&i.Session,
+		&i.LoggedAt,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const getUserByNameWithPassword = `-- name: GetUserByNameWithPassword :one
-SELECT id, name, password, is_active, created_at FROM users WHERE name = ? LIMIT 1
+SELECT id, name, password, is_active, session, logged_at, created_at FROM users WHERE name = ? LIMIT 1
 `
 
 func (q *Queries) GetUserByNameWithPassword(ctx context.Context, name string) (User, error) {
@@ -142,13 +157,43 @@ func (q *Queries) GetUserByNameWithPassword(ctx context.Context, name string) (U
 		&i.Name,
 		&i.Password,
 		&i.IsActive,
+		&i.Session,
+		&i.LoggedAt,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getUserBySession = `-- name: GetUserBySession :one
+SELECT id, name, is_active, session, logged_at, created_at 
+  FROM users WHERE session = ? and session <> "" and session is not null  LIMIT 1
+`
+
+type GetUserBySessionRow struct {
+	ID        int64      `db:"id" json:"id"`
+	Name      string     `db:"name" json:"name" validate:"required"`
+	IsActive  *bool      `db:"is_active" json:"is_active"`
+	Session   *string    `db:"session" json:"session"`
+	LoggedAt  *time.Time `db:"logged_at" json:"logged_at"`
+	CreatedAt *time.Time `db:"created_at" json:"created_at"`
+}
+
+func (q *Queries) GetUserBySession(ctx context.Context, session *string) (GetUserBySessionRow, error) {
+	row := q.db.QueryRowContext(ctx, getUserBySession, session)
+	var i GetUserBySessionRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.IsActive,
+		&i.Session,
+		&i.LoggedAt,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const getUserWithPassword = `-- name: GetUserWithPassword :one
-SELECT id, name, password, is_active, created_at FROM users WHERE id = ? LIMIT 1
+SELECT id, name, password, is_active, session, logged_at, created_at FROM users WHERE id = ? LIMIT 1
 `
 
 func (q *Queries) GetUserWithPassword(ctx context.Context, id int64) (User, error) {
@@ -159,6 +204,8 @@ func (q *Queries) GetUserWithPassword(ctx context.Context, id int64) (User, erro
 		&i.Name,
 		&i.Password,
 		&i.IsActive,
+		&i.Session,
+		&i.LoggedAt,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -251,13 +298,15 @@ func (q *Queries) ListPokemonsOffset(ctx context.Context, arg ListPokemonsOffset
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, name, is_active, created_at FROM users ORDER BY id
+SELECT id, name, is_active, session, logged_at, created_at FROM users ORDER BY id
 `
 
 type ListUsersRow struct {
 	ID        int64      `db:"id" json:"id"`
 	Name      string     `db:"name" json:"name" validate:"required"`
 	IsActive  *bool      `db:"is_active" json:"is_active"`
+	Session   *string    `db:"session" json:"session"`
+	LoggedAt  *time.Time `db:"logged_at" json:"logged_at"`
 	CreatedAt *time.Time `db:"created_at" json:"created_at"`
 }
 
@@ -274,6 +323,8 @@ func (q *Queries) ListUsers(ctx context.Context) ([]ListUsersRow, error) {
 			&i.ID,
 			&i.Name,
 			&i.IsActive,
+			&i.Session,
+			&i.LoggedAt,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -291,7 +342,7 @@ func (q *Queries) ListUsers(ctx context.Context) ([]ListUsersRow, error) {
 
 const updateUser = `-- name: UpdateUser :one
 UPDATE users set name = ?, password = ?, is_active = ? WHERE id = ?
-RETURNING id, name, is_active, created_at
+RETURNING id, name, is_active, session, logged_at, created_at
 `
 
 type UpdateUserParams struct {
@@ -305,6 +356,8 @@ type UpdateUserRow struct {
 	ID        int64      `db:"id" json:"id"`
 	Name      string     `db:"name" json:"name" validate:"required"`
 	IsActive  *bool      `db:"is_active" json:"is_active"`
+	Session   *string    `db:"session" json:"session"`
+	LoggedAt  *time.Time `db:"logged_at" json:"logged_at"`
 	CreatedAt *time.Time `db:"created_at" json:"created_at"`
 }
 
@@ -320,14 +373,15 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (UpdateU
 		&i.ID,
 		&i.Name,
 		&i.IsActive,
+		&i.Session,
+		&i.LoggedAt,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
-const updateUserActiveState = `-- name: UpdateUserActiveState :one
+const updateUserActiveState = `-- name: UpdateUserActiveState :exec
 UPDATE users set is_active = ? WHERE id = ?
-RETURNING id, name, is_active, created_at
 `
 
 type UpdateUserActiveStateParams struct {
@@ -335,21 +389,22 @@ type UpdateUserActiveStateParams struct {
 	ID       int64 `db:"id" json:"id"`
 }
 
-type UpdateUserActiveStateRow struct {
-	ID        int64      `db:"id" json:"id"`
-	Name      string     `db:"name" json:"name" validate:"required"`
-	IsActive  *bool      `db:"is_active" json:"is_active"`
-	CreatedAt *time.Time `db:"created_at" json:"created_at"`
+func (q *Queries) UpdateUserActiveState(ctx context.Context, arg UpdateUserActiveStateParams) error {
+	_, err := q.db.ExecContext(ctx, updateUserActiveState, arg.IsActive, arg.ID)
+	return err
 }
 
-func (q *Queries) UpdateUserActiveState(ctx context.Context, arg UpdateUserActiveStateParams) (UpdateUserActiveStateRow, error) {
-	row := q.db.QueryRowContext(ctx, updateUserActiveState, arg.IsActive, arg.ID)
-	var i UpdateUserActiveStateRow
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.IsActive,
-		&i.CreatedAt,
-	)
-	return i, err
+const updateUserSession = `-- name: UpdateUserSession :exec
+UPDATE users set session = ?, logged_at = ? WHERE id = ?
+`
+
+type UpdateUserSessionParams struct {
+	Session  *string    `db:"session" json:"session"`
+	LoggedAt *time.Time `db:"logged_at" json:"logged_at"`
+	ID       int64      `db:"id" json:"id"`
+}
+
+func (q *Queries) UpdateUserSession(ctx context.Context, arg UpdateUserSessionParams) error {
+	_, err := q.db.ExecContext(ctx, updateUserSession, arg.Session, arg.LoggedAt, arg.ID)
+	return err
 }

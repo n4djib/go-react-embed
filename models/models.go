@@ -19,5 +19,7 @@ type User struct {
 	Name      string     `db:"name" json:"name" validate:"required"`
 	Password  string     `db:"password" json:"password" validate:"required"`
 	IsActive  *bool      `db:"is_active" json:"is_active"`
+	Session   *string    `db:"session" json:"session"`
+	LoggedAt  *time.Time `db:"logged_at" json:"logged_at"`
 	CreatedAt *time.Time `db:"created_at" json:"created_at"`
 }
