@@ -115,6 +115,8 @@ func signin(c echo.Context) error {
 		})
 	}
 
+	// fmt.Println("user::", user)
+
 	// check if user is active
 	is_active := *user.IsActive
 	if !is_active {
@@ -166,9 +168,9 @@ func signin(c echo.Context) error {
 	cookie := createCookie("Authorization", session_uuid, expiration)
 	// set cookies
 	c.SetCookie(cookie)
-	// fmt.Println("Cookie has been set")
 
 	user.Password = "[HIDDEN]"
+	user.Session = &session_uuid
 	return c.JSON(http.StatusOK, echo.Map{
 		"message": "Sign in successfully",
 		"user": user,
