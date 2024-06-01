@@ -1,11 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { z } from "zod";
 import ErrorMessage from "../../components/ErrorMessage";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, User } from "lucide-react";
 import { useState } from "react";
-import { useAuth } from "../../contexts/auth-context";
+import { ContextUserType, useAuth } from "../../contexts/auth-context";
 // import { User as UserData } from "../../lib/tanstack-query/users";
 // FIXME import size is huge
 import { Button, Input } from "@material-tailwind/react";
@@ -17,6 +17,11 @@ import { Button, Input } from "@material-tailwind/react";
 
 export const Route = createFileRoute("/auth/signin")({
   component: SignIn,
+  // loader: () => {
+  //   throw redirect({
+  //     to: "/",
+  //   });
+  // },
 });
 
 const Schema = z.object({
@@ -59,14 +64,16 @@ function SignIn() {
       });
 
       const result = await response.json();
-      console.log("Result:", result);
+      console.log("Result___:", result);
 
-      // const user = {
+      if (response.ok) {
+        const user: ContextUserType = {
+          id: result.user.id,
+          name: result.user.name,
+        };
 
-      // }
-
-      // FIXME the type is not correct
-      login(result.user);
+        login(user);
+      }
     } catch (error) {
       console.log("error:", error);
     }

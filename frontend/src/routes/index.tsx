@@ -11,7 +11,10 @@ const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
 function Index() {
   const [data, setData] = useState<string>("");
-  const { user } = useAuth();
+  // const { user } = useAuth();
+  const context = useAuth();
+
+  console.log({ context });
 
   const fetchData = async () => {
     const response = await fetch(baseUrl + "/ping");
@@ -38,7 +41,7 @@ function Index() {
       </div>
       <br />
       <br />
-      <div>{JSON.stringify(user)}</div>
+      <div>{JSON.stringify(context.user)}</div>
     </>
   );
 }

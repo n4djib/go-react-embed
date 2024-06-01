@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { useAuth } from "../contexts/auth-context";
+import { ContextUserType, useAuth } from "../contexts/auth-context";
 import { useUserWhoami } from "../lib/tanstack-query/users";
 import { useEffect } from "react";
 
@@ -8,14 +8,22 @@ const activeProps = {
 };
 
 const AuthLinks = () => {
-  const { user, setUser } = useAuth();
+  const { user, login } = useAuth();
   const { data, isLoading } = useUserWhoami();
 
   if (isLoading)
     <div className="flex gap-2 items-center ml-auto">Loading...</div>;
 
   useEffect(() => {
-    setUser(data || null);
+    if (data) {
+      // console.log("--AuthLinks data:", data);
+      const user: ContextUserType = {
+        id: data.id,
+        name: data.name,
+      };
+      // console.log("--AuthLinks user:", user);
+      login(user);
+    }
   }, [data]);
 
   if (!user) {
@@ -33,6 +41,9 @@ const AuthLinks = () => {
 
   return (
     <div className="flex gap-2 items-center ml-auto">
+      <Link to="/auth/signin" activeProps={activeProps}>
+        (test)
+      </Link>
       <Link to="/auth/signout" activeProps={activeProps}>
         Sign Out
       </Link>

@@ -14,8 +14,14 @@ export type User = {
   password: string;
 };
 
+// type UserData = {
+//   count: number;
+//   result: User;
+// };
+
 type UsersData = {
   count: number;
+  // FIXME change data to result
   data: User[];
 };
 
@@ -67,7 +73,9 @@ export const useUserWhoami = () => {
           return null;
         }
         if (!response.ok) throw new Error(data.message);
-        return data as User;
+
+        // console.log("-++-useUserWhoami data:", data);
+        return data.user as User;
       } catch (error) {
         throw error;
       }

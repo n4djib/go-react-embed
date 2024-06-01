@@ -1,10 +1,13 @@
 import React, { createContext, useContext, useState } from "react";
-import { User } from "../lib/tanstack-query/users";
+
+export type ContextUserType = {
+  id: number;
+  name: string;
+};
 
 type AuthContextType = {
-  user: User | null;
-  setUser: (userData: User | null) => void;
-  login: (userData: User) => void;
+  user: ContextUserType | null;
+  login: (userData: ContextUserType) => void;
   logout: () => void;
 };
 
@@ -20,9 +23,9 @@ export default function AuthContextProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<ContextUserType | null>(null);
 
-  const login = (userData: User) => {
+  const login = (userData: ContextUserType) => {
     setUser(userData);
   };
 
@@ -30,12 +33,11 @@ export default function AuthContextProvider({
     await fetch(`${BACKEND_URL}/api/auth/signout`, {
       credentials: CREDENTIALS,
     });
-
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, setUser, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
