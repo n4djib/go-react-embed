@@ -14,7 +14,7 @@ export const Route = createFileRoute("/auth/signup")({
   component: () => <SignUp />,
 });
 
-// TODO Check if user is available by calling api
+// TODO Check if user is available by calling api checkName
 const Schema = z
   .object({
     name: z
