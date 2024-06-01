@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"go-react-embed/models"
 	"net/http"
 	"os"
@@ -19,11 +20,11 @@ func RegisterUsersHandlers(e *echo.Group) {
 	e.PUT("/users", updateUserHandler)
 	e.DELETE("/users/:id", deleteUserHandler)
 	e.PUT("/users/active-state", updateUserActiveStateHandler)
-
 	
 	e.POST("/auth/signup", signup)
 	e.POST("/auth/signin", signin)
 	e.GET("/auth/signout", signout)
+	e.GET("/auth/whoami", whoami)
 
 	// TODO
 	// forgoten password
@@ -78,7 +79,7 @@ func signup(c echo.Context) error {
 			Error: err.Error(),
 		})
 	}
-	return c.JSON(http.StatusOK, Status{
+	return c.JSON(http.StatusCreated, Status{
 		Message: "Signed up successfully",
 		Data:    user,
 	})
@@ -165,10 +166,27 @@ func signin(c echo.Context) error {
 	cookie := createCookie("Authorization", session_uuid, expiration)
 	// set cookies
 	c.SetCookie(cookie)
+	// fmt.Println("Cookie has been set")
 
 	user.Password = "[HIDDEN]"
 	return c.JSON(http.StatusOK, echo.Map{
-		"Message": "Sign in successfully",
+		"message": "Sign in successfully",
+		"user": user,
+	})
+}
+
+func whoami(c echo.Context) error {
+	cookie, err := c.Cookie("Authorization")
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Authorization Cookie not found")
+	}
+	session_uuid := cookie.Value  // uuid
+	user, err := models.QUERIES.GetUserBySession(models.CTX, &session_uuid)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusNotFound, "Failed to find user")
+	}
+	return c.JSON(http.StatusOK, echo.Map{
+		"user": user,
 	})
 }
 
@@ -191,6 +209,7 @@ func AuthenticatedMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 }
 
 func signout(c echo.Context) error {
+	fmt.Println("Signing out")
 	cookie, err := c.Cookie("Authorization")
 	if err != nil {
 		return c.JSON(http.StatusOK, Error{
@@ -239,6 +258,9 @@ func createCookie(name string, value string, timeHoursExpiry time.Time) *http.Co
 	if timeHoursExpiry == time.Unix(0, 0) {
 		cookie.MaxAge = -1
 	}
+	if os.Getenv("MODE") == "DEV" {
+		cookie.SameSite = http.SameSiteNoneMode
+	}
 	return cookie
 }
 
@@ -260,50 +282,37 @@ func getUserHandler(c echo.Context) error {
 	param := c.Param("id")
 	id, err := strconv.ParseInt(param, 10, 64)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, Error{
-			Error: err.Error(),
-		})
+		return echo.NewHTTPError(http.StatusBadRequest, "id param must be integer")
 	}
 	user, err := models.QUERIES.GetUser(models.CTX, id)
-	// user, err := models.QUERIES.GetUserWithPassword(models.CTX, id)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, Error{
-			Error: err.Error(),
-		})
+		return echo.NewHTTPError(http.StatusNotFound, "no rows in result set")
 	}
-	data := Data{
-		Data: user,
-	}
-	return c.JSON(http.StatusOK, data)
+	return c.JSON(http.StatusOK, echo.Map{
+		"user": user,
+	})
 }
 
 func getUserByNameHandler(c echo.Context) error {
 	name := c.Param("name")
 	user, err := models.QUERIES.GetUserByName(models.CTX, name)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, Error{
-			Error: err.Error(),
-		})
+		return echo.NewHTTPError(http.StatusNotFound, "no rows in result set")
 	}
-	data := Data{
-		Data: user,
-	}
-	return c.JSON(http.StatusOK, data)
+	return c.JSON(http.StatusOK, echo.Map{
+		"user": user,
+	})
 }
 
 func updateUserHandler(c echo.Context) error {
 	var body models.UpdateUserParams
 	if err := c.Bind(&body); err != nil {
-		return c.JSON(http.StatusBadRequest, Error{
-			Error: err.Error(),
-		})
+		return echo.NewHTTPError(http.StatusBadRequest, "bad request")
 	}
 	// Validate the data
 	if err := validate.Struct(body); err != nil {
-		return c.JSON(http.StatusBadRequest, Error{
-			Error: err.Error(),
-		})
-	}
+		return echo.NewHTTPError(http.StatusBadRequest, "bad request")
+	} // TODO combine the two tests
 
 	hash, err := hashPassword(body.Password)
 	if err != nil {

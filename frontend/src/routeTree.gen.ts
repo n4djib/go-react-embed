@@ -18,6 +18,7 @@ import { Route as IndexImport } from './routes/index'
 import { Route as PokemonsIndexImport } from './routes/pokemons/index'
 import { Route as PokemonsIdImport } from './routes/pokemons/$id'
 import { Route as AuthSignupImport } from './routes/auth/signup'
+import { Route as AuthSignoutImport } from './routes/auth/signout'
 import { Route as AuthSigninImport } from './routes/auth/signin'
 import { Route as PostsIdEditImport } from './routes/posts/$id/edit'
 
@@ -58,6 +59,11 @@ const AuthSignupRoute = AuthSignupImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const AuthSignoutRoute = AuthSignoutImport.update({
+  path: '/auth/signout',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const AuthSigninRoute = AuthSigninImport.update({
   path: '/auth/signin',
   getParentRoute: () => rootRoute,
@@ -92,6 +98,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthSigninImport
       parentRoute: typeof rootRoute
     }
+    '/auth/signout': {
+      preLoaderRoute: typeof AuthSignoutImport
+      parentRoute: typeof rootRoute
+    }
     '/auth/signup': {
       preLoaderRoute: typeof AuthSignupImport
       parentRoute: typeof rootRoute
@@ -119,6 +129,7 @@ export const routeTree = rootRoute.addChildren([
   EchartRoute,
   ProfileRoute,
   AuthSigninRoute,
+  AuthSignoutRoute,
   AuthSignupRoute,
   PokemonsIdRoute,
   PokemonsIndexRoute,

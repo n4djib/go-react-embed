@@ -1,4 +1,5 @@
 import { Link, Outlet, createRootRoute } from "@tanstack/react-router";
+import AuthLinks from "../components/AuthLinks";
 
 const activeProps = {
   className: "font-bold underline",
@@ -11,7 +12,8 @@ export const Route = createRootRoute({
         <Link to="/">
           <h1 className="text-xl font-bold mr-3">GO-REACT</h1>
         </Link>
-        <div className="gap-2 items-center hidden sm:flex">
+        {/* <div className="gap-2 items-center hidden sm:flex"> */}
+        <div className="gap-2 items-center sm:flex">
           <Link to="/" activeProps={activeProps}>
             Home
           </Link>
@@ -37,18 +39,11 @@ export const Route = createRootRoute({
           {/* <Link to="/posts/1/edit" activeProps={activeProps}>
             Edit Post
           </Link> */}
-          <Link to="/echart" activeProps={activeProps}>
+          {/* <Link to="/echart" activeProps={activeProps}>
             Echart
-          </Link>
+          </Link> */}
         </div>
-        <div className="flex gap-2 items-center ml-auto">
-          <Link to="/auth/signin" activeProps={activeProps}>
-            Sign In
-          </Link>
-          <Link to="/auth/signup" activeProps={activeProps}>
-            Sign Up
-          </Link>
-        </div>
+        <AuthLinks />
       </div>
 
       <div className="p-2">

@@ -5,9 +5,10 @@ export const getData = async (url: string) => {
   return res.json();
 };
 
-const baseUrl = import.meta.env.VITE_BACKEND_URL;
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const CREDENTIALS = import.meta.env.VITE_CREDENTIALS;
 
-type User = {
+export type User = {
   id: number;
   name: string;
   password: string;
@@ -23,7 +24,7 @@ export const useUserList = () => {
     queryKey: ["users"],
     queryFn: async () => {
       try {
-        const users: UsersData = await getData(`${baseUrl}/api/auth/users`);
+        const users: UsersData = await getData(`${BACKEND_URL}/api/auth/users`);
         return users;
       } catch (error) {
         console.log("Error while fetching Users");
@@ -34,26 +35,62 @@ export const useUserList = () => {
 };
 
 export const useUser = (id: number) => {
+  const url = `${BACKEND_URL}/api/users/${id}`;
   return useQuery({
     queryKey: ["user", id],
     queryFn: async () => {
       try {
-        const user: User = await getData(`${baseUrl}/api/auth/users/${id}`);
-        return user;
+        const response = await fetch(url, { credentials: CREDENTIALS });
+        const data = await response.json();
+        // console.log("user::", data);
+        if (!response.ok) {
+          throw new Error(data.message);
+        }
+        return data as User;
       } catch (error) {
-        console.log("Error while fetching User " + id);
-        console.log(error);
+        throw error;
       }
     },
   });
 };
 
-export const useInsertUser = () => {
-  const queryClient = useQueryClient();
+export const useUserWhoami = () => {
+  const url = `${BACKEND_URL}/api/auth/whoami/`;
 
+  const { isError, error, data, isLoading, isFetched } = useQuery({
+    queryKey: ["user"],
+    queryFn: async () => {
+      try {
+        const response = await fetch(url, { credentials: CREDENTIALS });
+        const data = await response.json();
+        if (response.status === 400 || response.status === 404) {
+          return null;
+        }
+        if (!response.ok) throw new Error(data.message);
+        return data as User;
+      } catch (error) {
+        throw error;
+      }
+    },
+    // FIXME problem - it retries 3 more times if it throws error
+    // retry: false,
+  });
+
+  return {
+    isError,
+    error,
+    data,
+    isLoading,
+    isFetched,
+  };
+};
+
+export const useInsertUser = () => {
+  const url = `${BACKEND_URL}/api/auth/signup`;
+  const queryClient = useQueryClient();
   return useMutation({
     async mutationFn(data: { name: string; password: string }) {
-      const response = await fetch(`${baseUrl}/api/auth/signup`, {
+      const response = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -61,15 +98,16 @@ export const useInsertUser = () => {
         body: JSON.stringify(data),
       });
       if (!response.ok) {
-        throw new Error("Failed to insert record ---");
+        throw new Error("Failed to creating a new User");
       }
       return await response.json();
     },
-    async onSuccess() {
+    async onSuccess(/*data*/) {
+      // console.log("onSuccess:", data);
       await queryClient.invalidateQueries({ queryKey: ["users"] });
     },
-    async onError() {
-      console.log("Error creating a new User ----");
-    },
+    // async onError() {
+    //   console.log("Error creating a new User");
+    // },
   });
 };

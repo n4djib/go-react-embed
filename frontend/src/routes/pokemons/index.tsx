@@ -1,6 +1,9 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { usePokemonList } from "../../lib/tanstack-query/pokemons";
-import { Button, Spinner } from "@material-tailwind/react";
+import {
+  PokemonsResult,
+  usePokemonList,
+  Pokemon,
+} from "../../lib/tanstack-query/pokemons";
 import { useEffect, useState } from "react";
 import {
   List,
@@ -10,9 +13,10 @@ import {
   Card,
   Typography,
   IconButton,
+  Button,
+  Spinner,
 } from "@material-tailwind/react";
 import { capitalizeFirstLetter } from "../../lib/utils";
-import { Pokemon, PokemonsData } from "../../lib/tanstack-query/pokemons";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 type PaginationParams = {
@@ -63,8 +67,8 @@ function Pokemons() {
       <Card className="w-80">
         <List>
           {pokemons &&
-            pokemons.data &&
-            pokemons.data.map((pokemon) => (
+            pokemons.result &&
+            pokemons.result.map((pokemon) => (
               <PokemonListItem pokemon={pokemon} key={pokemon.id} />
             ))}
         </List>
@@ -103,7 +107,7 @@ function Pagination({
   limit,
   offset,
 }: {
-  pokemons: PokemonsData;
+  pokemons: PokemonsResult;
   limit: number;
   offset: number;
 }) {

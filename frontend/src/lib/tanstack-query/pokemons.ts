@@ -9,7 +9,7 @@ export const getData = async (url: string) => {
   return res.json();
 };
 
-const baseUrl = import.meta.env.VITE_BACKEND_URL;
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export type Pokemon = {
   id: number;
@@ -17,15 +17,15 @@ export type Pokemon = {
   image: string;
 };
 
-type PokemonData = {
-  data: Pokemon;
+type PokemonResult = {
+  result: Pokemon;
 };
 
-export type PokemonsData = {
+export type PokemonsResult = {
   count: number;
   limit: number;
   offset: number;
-  data: Pokemon[];
+  result: Pokemon[];
 };
 
 type UsePokemonListProps = {
@@ -33,13 +33,14 @@ type UsePokemonListProps = {
   offset: number;
 };
 
+// TODO tanstack query can handle pagination
 export const usePokemonList = ({ limit, offset }: UsePokemonListProps) => {
-  const url = `${baseUrl}/api/pokemons?limit=${limit}&offset=${offset}`;
+  const url = `${BACKEND_URL}/api/pokemons?limit=${limit}&offset=${offset}`;
   return useQuery({
     queryKey: ["pokemons"],
     queryFn: async () => {
       try {
-        const pokemons: PokemonsData = await getData(url);
+        const pokemons: PokemonsResult = await getData(url);
         return pokemons;
       } catch (error) {
         console.log("Error while fetching Pokemons");
@@ -50,14 +51,17 @@ export const usePokemonList = ({ limit, offset }: UsePokemonListProps) => {
 };
 
 export const usePokemon = (id: number) => {
+  const url = `${BACKEND_URL}/api/pokemons/${id}`;
   return useQuery({
     queryKey: ["pokemon", id],
     queryFn: async () => {
       try {
-        const pokemon: PokemonData = await getData(
-          `${baseUrl}/api/pokemons/${id}`
-        );
-        return pokemon;
+        const response = await fetch(url);
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.message);
+        }
+        return data as PokemonResult;
       } catch (error) {
         console.log("Error while fetching Pokemon " + id);
         console.log(error);

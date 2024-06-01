@@ -9,6 +9,8 @@ const PokemonList = () => {
   const { id } = Route.useParams();
   const { data: pokemon, isLoading, error } = usePokemon(parseInt(id));
 
+  // console.log("pokemon $id:::", pokemon);
+
   if (isLoading) return <div>Loading...</div>;
 
   if (error) return <div>Failed to fetch.</div>;
@@ -17,12 +19,12 @@ const PokemonList = () => {
     <>
       {pokemon && (
         <>
-          <p>ID: {pokemon.data.id}</p>
-          <p>Name: {pokemon.data.name}</p>
+          <p>ID: {pokemon.result.id}</p>
+          <p>Name: {pokemon.result.name}</p>
           <div>
             <img
-              src={pokemon.data.image}
-              alt={`pokemon image ${pokemon.data.image}`}
+              src={pokemon.result.image}
+              alt={`pokemon image ${pokemon.result.image}`}
               className="w-60 h-60"
             />
           </div>

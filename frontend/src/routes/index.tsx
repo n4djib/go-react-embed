@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Button } from "@material-tailwind/react";
+import { useAuth } from "../contexts/auth-context";
 
 export const Route = createFileRoute("/")({
   component: () => <Index />,
@@ -10,6 +11,7 @@ const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
 function Index() {
   const [data, setData] = useState<string>("");
+  const { user } = useAuth();
 
   const fetchData = async () => {
     const response = await fetch(baseUrl + "/ping");
@@ -34,6 +36,9 @@ function Index() {
           Unset
         </Button>
       </div>
+      <br />
+      <br />
+      <div>{JSON.stringify(user)}</div>
     </>
   );
 }

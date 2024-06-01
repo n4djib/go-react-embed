@@ -1,16 +1,20 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+// FIXME import size is huge
 import { Button, Input } from "@material-tailwind/react";
 import { createFileRoute } from "@tanstack/react-router";
-import { CircleAlert, Eye, EyeOff, User } from "lucide-react";
+import { Eye, EyeOff, User } from "lucide-react";
 import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
 import { useInsertUser } from "../../lib/tanstack-query/users";
+import ErrorMessage from "../../components/ErrorMessage";
+import toast from "react-hot-toast";
 
 export const Route = createFileRoute("/auth/signup")({
   component: () => <SignUp />,
 });
 
+// TODO Check if user is available by calling api
 const Schema = z
   .object({
     name: z
@@ -39,22 +43,29 @@ function SignUp() {
   const {
     register,
     handleSubmit,
-    // reset,
-    // control,
-    // watch,
     formState: { errors, isSubmitting },
   } = useForm<InputType>({
     resolver: zodResolver(Schema),
   });
 
-  const { mutate: insertUser } = useInsertUser();
+  const {
+    mutate: insertUser,
+    data: createdUser,
+    isSuccess,
+    error,
+  } = useInsertUser();
 
   const signUp: SubmitHandler<InputType> = async (data) => {
-    console.log(data);
+    // const resp =
     await insertUser({
       name: data.name,
       password: data.password,
     });
+    if (isSuccess) {
+      toast.success(createdUser.message);
+    } else {
+      toast.error(error?.message || "err");
+    }
   };
 
   return (
@@ -121,19 +132,6 @@ function SignUp() {
           {isSubmitting ? "Please wait" : "Submit"}
         </Button>
       </form>
-    </>
-  );
-}
-
-function ErrorMessage({ err }: any) {
-  return (
-    <>
-      {err?.message && (
-        <div className="text-red-500 mb-3 text-sm flex items-center">
-          <CircleAlert className="w-4 mr-1" />
-          {err?.message}
-        </div>
-      )}
     </>
   );
 }

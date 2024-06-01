@@ -91,6 +91,7 @@ func useCORSMiddleware(e *echo.Echo) {
 	corsConfig := middleware.CORSConfig{
 		AllowOrigins: allowOrigins,
 		AllowMethods: allowMethods,
+		AllowCredentials: true,
 	}
 	e.Use(middleware.CORSWithConfig(corsConfig))
 }

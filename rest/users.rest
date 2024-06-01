@@ -1,16 +1,16 @@
 @baseUrl = https://localhost:8080
 
 
-### Signup
+### Sign-up
 POST {{baseUrl}}/api/auth/signup
 Content-Type: application/json
 
 {
-    "name": "n4djib3",
+    "name": "n4djib4",
     "password": "123456"
 }
 
-### Signin (login)
+### Sign-in (login)
 POST {{baseUrl}}/api/auth/signin
 Content-Type: application/json
 
@@ -28,10 +28,13 @@ Content-Type: application/json
     "is_active": true
 }
 
+### Who Am I
+GET {{baseUrl}}/api/auth/whoami
+
 ### get all users (testing authenticated)
 {{baseUrl}}/api/users
 
-### Signout (logout)
+### Sign-out (logout)
 {{baseUrl}}/api/auth/signout
 
 

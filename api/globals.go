@@ -16,6 +16,17 @@ type DataList struct {
 	Data   interface{} `json:"data"`
 }
 
+type Result struct {
+	Result interface{} `json:"result"`
+}
+
+type ResultList struct {
+	Count  int         `json:"count"`
+	Limit  int         `json:"limit"`
+	Offset int         `json:"offset"`
+	Result interface{} `json:"result"`
+}
+
 type Error struct {
 	Error string `json:"error"`
 }
