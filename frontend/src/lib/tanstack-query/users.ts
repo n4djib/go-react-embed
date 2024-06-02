@@ -1,9 +1,9 @@
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 
-export const getData = async (url: string) => {
-  const res = await fetch(url);
-  return res.json();
-};
+// export const getData = async (url: string) => {
+//   const res = await fetch(url);
+//   return res.json();
+// };
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const CREDENTIALS = import.meta.env.VITE_CREDENTIALS;
@@ -14,27 +14,29 @@ export type User = {
   password: string;
 };
 
-// type UserData = {
-//   count: number;
-//   result: User;
-// };
+type UserResult = {
+  result: User;
+};
 
-type UsersData = {
+type UsersResult = {
   count: number;
-  // FIXME change data to result
-  data: User[];
+  result: User[];
 };
 
 export const useUserList = () => {
+  const url = `${BACKEND_URL}/api/auth/users`;
   return useQuery({
     queryKey: ["users"],
     queryFn: async () => {
       try {
-        const users: UsersData = await getData(`${BACKEND_URL}/api/auth/users`);
-        return users;
+        const response = await fetch(url, { credentials: CREDENTIALS });
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.message);
+        }
+        return data as UsersResult;
       } catch (error) {
-        console.log("Error while fetching Users");
-        console.log(error);
+        throw error;
       }
     },
   });
@@ -51,7 +53,7 @@ export const useUser = (id: number) => {
         if (!response.ok) {
           throw new Error(data.message);
         }
-        return data as User;
+        return data as UserResult;
       } catch (error) {
         throw error;
       }
@@ -63,7 +65,7 @@ export const useUserWhoami = () => {
   const url = `${BACKEND_URL}/api/auth/whoami/`;
 
   const { isError, error, data, isLoading, isFetched } = useQuery({
-    queryKey: ["user"],
+    queryKey: ["user", "whoami"],
     queryFn: async () => {
       try {
         const response = await fetch(url, { credentials: CREDENTIALS });
@@ -106,7 +108,8 @@ export const useInsertUser = () => {
       if (!response.ok) {
         throw new Error("Failed to creating a new User");
       }
-      return await response.json();
+      const res = await response.json();
+      return res;
     },
     async onSuccess(/*data*/) {
       await queryClient.invalidateQueries({ queryKey: ["users"] });

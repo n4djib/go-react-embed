@@ -24,7 +24,7 @@ PUT {{baseUrl}}/api/users/active-state
 Content-Type: application/json
 
 {
-    "id": 3,
+    "id": 2,
     "is_active": true
 }
 
@@ -46,7 +46,7 @@ GET {{baseUrl}}/api/auth/whoami
 Accept: application/json
 
 ### get user by id
-{{baseUrl}}/api/users/2
+{{baseUrl}}/api/users/3
 
 ### get user by name
 {{baseUrl}}/api/users/name/nadjib
@@ -62,10 +62,5 @@ Content-Type: application/json
     "is_active": true
 }
 
-
-
-# DELETE /users/:id
-
-
-# PUT users/active-state
-
+### DELETE /users/:id
+DELETE https://localhost:8080/api/users/10

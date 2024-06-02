@@ -117,7 +117,7 @@ go get github.com/google/uuid
 - add email
 - add config options when starting the app
 - validate env variables
-- 
+- sanitize input
 - 
 - 
 - 

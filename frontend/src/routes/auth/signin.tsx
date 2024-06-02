@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, User } from "lucide-react";
 import { useState } from "react";
 import { ContextUserType, useAuth } from "../../contexts/auth-context";
-// import { User as UserData } from "../../lib/tanstack-query/users";
+
 // FIXME import size is huge
 import { Button, Input } from "@material-tailwind/react";
 // const Button = lazy(() =>
@@ -42,10 +42,10 @@ function SignIn() {
     resolver: zodResolver(Schema),
   });
   const navigate = useNavigate();
-
   const { user, login } = useAuth();
+
   if (user) {
-    // FIXME this loggs a warning
+    // FIXME this logs a warnning
     navigate({ to: "/", replace: true });
   }
 
@@ -62,7 +62,6 @@ function SignIn() {
         credentials: CREDENTIALS,
         body: JSON.stringify(data),
       });
-
       const result = await response.json();
 
       if (response.ok) {

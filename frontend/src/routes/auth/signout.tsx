@@ -12,17 +12,14 @@ function SignOut() {
 
   useEffect(() => {
     logout();
-    // TODO redirect
-    // // FIXME this loggs a warning
     navigate({ to: "/", replace: true });
   }, []);
 
-  // return null;
+  return null;
 
-  return (
-    <div>
-      Signing Out
-      {/* <div>User useAuth: {JSON.stringify(user)}</div> */}
-    </div>
-  );
+  // return (
+  //   <div>
+  //     Signing Out
+  //   </div>
+  // );
 }

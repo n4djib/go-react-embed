@@ -4,10 +4,10 @@ import {
   useQuery,
 } from "@tanstack/react-query";
 
-export const getData = async (url: string) => {
-  const res = await fetch(url);
-  return res.json();
-};
+// export const getData = async (url: string) => {
+//   const res = await fetch(url);
+//   return res.json();
+// };
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -40,8 +40,10 @@ export const usePokemonList = ({ limit, offset }: UsePokemonListProps) => {
     queryKey: ["pokemons"],
     queryFn: async () => {
       try {
-        const pokemons: PokemonsResult = await getData(url);
-        return pokemons;
+        const response = await fetch(url);
+        const data = await response.json();
+        // TODO handle error
+        return data as PokemonsResult;
       } catch (error) {
         console.log("Error while fetching Pokemons");
         console.log(error);
