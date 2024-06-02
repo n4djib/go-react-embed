@@ -48,7 +48,6 @@ export const useUser = (id: number) => {
       try {
         const response = await fetch(url, { credentials: CREDENTIALS });
         const data = await response.json();
-        // console.log("user::", data);
         if (!response.ok) {
           throw new Error(data.message);
         }
@@ -74,7 +73,6 @@ export const useUserWhoami = () => {
         }
         if (!response.ok) throw new Error(data.message);
 
-        // console.log("-++-useUserWhoami data:", data);
         return data.user as User;
       } catch (error) {
         throw error;
@@ -111,7 +109,6 @@ export const useInsertUser = () => {
       return await response.json();
     },
     async onSuccess(/*data*/) {
-      // console.log("onSuccess:", data);
       await queryClient.invalidateQueries({ queryKey: ["users"] });
     },
     // async onError() {

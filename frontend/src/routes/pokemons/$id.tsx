@@ -9,8 +9,6 @@ const PokemonList = () => {
   const { id } = Route.useParams();
   const { data: pokemon, isLoading, error } = usePokemon(parseInt(id));
 
-  // console.log("pokemon $id:::", pokemon);
-
   if (isLoading) return <div>Loading...</div>;
 
   if (error) return <div>Failed to fetch.</div>;

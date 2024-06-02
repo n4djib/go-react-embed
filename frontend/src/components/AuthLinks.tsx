@@ -16,12 +16,10 @@ const AuthLinks = () => {
 
   useEffect(() => {
     if (data) {
-      // console.log("--AuthLinks data:", data);
       const user: ContextUserType = {
         id: data.id,
         name: data.name,
       };
-      // console.log("--AuthLinks user:", user);
       login(user);
     }
   }, [data]);
@@ -41,9 +39,6 @@ const AuthLinks = () => {
 
   return (
     <div className="flex gap-2 items-center ml-auto">
-      <Link to="/auth/signin" activeProps={activeProps}>
-        (test)
-      </Link>
       <Link to="/auth/signout" activeProps={activeProps}>
         Sign Out
       </Link>

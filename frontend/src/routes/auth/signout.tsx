@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "../../contexts/auth-context";
 import { useEffect } from "react";
 
@@ -7,17 +7,22 @@ export const Route = createFileRoute("/auth/signout")({
 });
 
 function SignOut() {
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     logout();
     // TODO redirect
+    // // FIXME this loggs a warning
+    navigate({ to: "/", replace: true });
   }, []);
+
+  // return null;
 
   return (
     <div>
       Signing Out
-      <div>User useAuth: {JSON.stringify(user)}</div>
+      {/* <div>User useAuth: {JSON.stringify(user)}</div> */}
     </div>
   );
 }

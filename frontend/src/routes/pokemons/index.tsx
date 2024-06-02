@@ -37,7 +37,6 @@ export const Route = createFileRoute("/pokemons/")({
 
 function Pokemons() {
   const { limit, offset } = Route.useSearch();
-  // const navigate = useNavigate();
 
   const {
     data: pokemons,
@@ -49,14 +48,6 @@ function Pokemons() {
   useEffect(() => {
     refetch();
   }, [limit, offset]);
-
-  // onClick={() => {
-  //   navigate({
-  //     to: "/pokemons",
-  //     replace: false,
-  //     search: { limit: limit, offset: newOffset - limit },
-  //   });
-  // }}
 
   if (isLoading) return <Spinner className="h-12 w-12" />;
   if (error) return <div>Failed to fetch.</div>;
@@ -131,8 +122,6 @@ function Pagination({
       offsets.push(currentOffset);
       currentOffset += limit;
     }
-    // console.log("offsets:::", offsets);
-    // console.log("offsets pokemons:::", { pokemons });
     return offsets;
   };
 

@@ -64,7 +64,6 @@ export const usePokemon = (id: number) => {
         return data as PokemonResult;
       } catch (error) {
         console.log("Error while fetching Pokemon " + id);
-        console.log(error);
       }
     },
   });

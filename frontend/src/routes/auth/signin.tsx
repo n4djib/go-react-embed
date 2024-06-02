@@ -1,4 +1,4 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import ErrorMessage from "../../components/ErrorMessage";
 import { SubmitHandler, useForm } from "react-hook-form";
@@ -17,11 +17,6 @@ import { Button, Input } from "@material-tailwind/react";
 
 export const Route = createFileRoute("/auth/signin")({
   component: SignIn,
-  // loader: () => {
-  //   throw redirect({
-  //     to: "/",
-  //   });
-  // },
 });
 
 const Schema = z.object({
@@ -46,8 +41,13 @@ function SignIn() {
   } = useForm<InputType>({
     resolver: zodResolver(Schema),
   });
+  const navigate = useNavigate();
 
-  const { login } = useAuth();
+  const { user, login } = useAuth();
+  if (user) {
+    // FIXME this loggs a warning
+    navigate({ to: "/", replace: true });
+  }
 
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
   const CREDENTIALS = import.meta.env.VITE_CREDENTIALS;
@@ -64,15 +64,14 @@ function SignIn() {
       });
 
       const result = await response.json();
-      console.log("Result___:", result);
 
       if (response.ok) {
-        const user: ContextUserType = {
+        const contextUser: ContextUserType = {
           id: result.user.id,
           name: result.user.name,
         };
 
-        login(user);
+        login(contextUser);
       }
     } catch (error) {
       console.log("error:", error);
