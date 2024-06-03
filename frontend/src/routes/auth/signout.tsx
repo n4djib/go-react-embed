@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "../../contexts/auth-context";
 import { useEffect } from "react";
+// import toast from "react-hot-toast";
 
 export const Route = createFileRoute("/auth/signout")({
   component: SignOut,
@@ -14,6 +15,8 @@ function SignOut() {
     logout();
     navigate({ to: "/", replace: true });
   }, []);
+
+  // toast.success("Logged out successfully");
 
   return null;
 

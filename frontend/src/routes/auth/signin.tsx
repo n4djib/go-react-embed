@@ -9,6 +9,7 @@ import { ContextUserType, useAuth } from "../../contexts/auth-context";
 
 // FIXME import size is huge
 import { Button, Input } from "@material-tailwind/react";
+import toast from "react-hot-toast";
 // const Button = lazy(() =>
 //   import("@material-tailwind/react").then((module) => ({
 //     default: module.Button,
@@ -71,6 +72,10 @@ function SignIn() {
         };
 
         login(contextUser);
+
+        toast.success(result.message);
+      } else {
+        toast.error(result?.message || "err");
       }
     } catch (error) {
       console.log("error:", error);
