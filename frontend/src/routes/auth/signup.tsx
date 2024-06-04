@@ -3,16 +3,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Input } from "@material-tailwind/react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Eye, EyeOff, User } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
 import { useInsertUser } from "../../lib/tanstack-query/users";
 import ErrorMessage from "../../components/ErrorMessage";
-import toast from "react-hot-toast";
-import { useMutation } from "@tanstack/react-query";
-
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-const CREDENTIALS = import.meta.env.VITE_CREDENTIALS;
 
 export const Route = createFileRoute("/auth/signup")({
   component: () => <SignUp />,
@@ -74,15 +69,17 @@ function SignUp() {
     // isPending,
     // error,
     mutate: insertUser,
-    data: createdUser,
+    data: user,
   } = useInsertUser({ onSuccess: null, onError: null });
 
   const navigate = useNavigate();
 
-  if (createdUser) {
-    console.log("createdUser", createdUser);
-    navigate({ to: "/auth/signin", replace: true });
-  }
+  useEffect(() => {
+    if (user) {
+      console.log("createdUser", user);
+      navigate({ to: "/auth/signin", replace: true });
+    }
+  }, [user]);
 
   const signUp: SubmitHandler<InputType> = async (data) => {
     await insertUser({

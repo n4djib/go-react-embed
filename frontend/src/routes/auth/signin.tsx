@@ -4,7 +4,7 @@ import ErrorMessage from "../../components/ErrorMessage";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, User } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ContextUserType, useAuth } from "../../contexts/auth-context";
 
 // FIXME import size is huge
@@ -46,10 +46,11 @@ function SignIn() {
   const navigate = useNavigate();
   const { user, login } = useAuth();
 
-  if (user) {
-    // FIXME this logs a warnning
-    navigate({ to: "/", replace: true });
-  }
+  useEffect(() => {
+    if (user) {
+      navigate({ to: "/", replace: true });
+    }
+  }, [user]);
 
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
   const CREDENTIALS = import.meta.env.VITE_CREDENTIALS;
