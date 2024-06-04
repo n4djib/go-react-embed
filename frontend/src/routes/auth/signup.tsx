@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 // FIXME import size is huge
 import { Button, Input } from "@material-tailwind/react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Eye, EyeOff, User } from "lucide-react";
 import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
@@ -9,6 +9,10 @@ import { z } from "zod";
 import { useInsertUser } from "../../lib/tanstack-query/users";
 import ErrorMessage from "../../components/ErrorMessage";
 import toast from "react-hot-toast";
+import { useMutation } from "@tanstack/react-query";
+
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const CREDENTIALS = import.meta.env.VITE_CREDENTIALS;
 
 export const Route = createFileRoute("/auth/signup")({
   component: () => <SignUp />,
@@ -33,39 +37,58 @@ const Schema = z
   .refine((data) => data.password === data.confirmPassword, {
     message: "Password and Confirm Password doesn't match!",
     path: ["confirmPassword"], // path is accepting only one field!
-    // and maybe it triggers on confirmPassword changes
   });
+// .refine(
+//   async (data) => {
+//     if (data.name) {
+//       try {
+//         console.log("---running refine:", data.name);
+//         const url = `${BACKEND_URL}/api/auth/check-name/${data.name}`;
+//         const response = await fetch( url
+//           // , { credentials: CREDENTIALS }
+//         );
+//         const res = await response.json();
+//         if (!response.ok) { throw new Error(res.message);  }
+//         return res;
+//       } catch (error) { throw error; }
+//     }  return true;
+//   },
+//   {
+//     message: "user name allready taken", path: ["name"],
+//   }
+// );
 
 type InputType = z.infer<typeof Schema>;
 
 function SignUp() {
-  const [isVisiblePass, setIsVisiblePass] = useState(false);
+  const [isVisiblePass, setIsVisiblePass] = useState(true);
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<InputType>({
-    resolver: zodResolver(Schema),
-  });
+  } = useForm<InputType>({ resolver: zodResolver(Schema) });
 
   const {
+    // isSuccess,
+    // isPending,
+    // error,
     mutate: insertUser,
     data: createdUser,
-    isSuccess,
-    error,
-  } = useInsertUser();
+  } = useInsertUser({ onSuccess: null, onError: null });
+
+  const navigate = useNavigate();
+
+  if (createdUser) {
+    console.log("createdUser", createdUser);
+    navigate({ to: "/auth/signin", replace: true });
+  }
 
   const signUp: SubmitHandler<InputType> = async (data) => {
-    // const resp =
     await insertUser({
       name: data.name,
       password: data.password,
     });
-    if (isSuccess) {
-      toast.success(createdUser.message);
-    } else {
-      toast.error(error?.message || "err");
-    }
   };
 
   return (
@@ -81,6 +104,7 @@ function SignUp() {
           {...register("name")}
           error={!!errors.name}
           icon={<User />}
+          autoComplete="false"
         />
         <ErrorMessage err={errors.name} />
 

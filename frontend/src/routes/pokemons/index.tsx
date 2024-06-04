@@ -78,7 +78,7 @@ function PokemonListItem({ pokemon }: { pokemon: Pokemon }) {
             variant="square"
             alt={pokemon.name}
             src={pokemon.image}
-            className="overflow-visible overflo"
+            className="overflow-visible "
           />
         </ListItemPrefix>
         <div className="ml-4">

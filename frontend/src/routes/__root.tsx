@@ -12,8 +12,7 @@ export const Route = createRootRoute({
         <Link to="/">
           <h1 className="text-xl font-bold mr-3">GO-REACT</h1>
         </Link>
-        {/* <div className="gap-2 items-center hidden sm:flex"> */}
-        <div className="gap-2 items-center sm:flex">
+        <div className="gap-2 items-center hidden sm:flex">
           <Link to="/" activeProps={activeProps}>
             Home
           </Link>

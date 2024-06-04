@@ -25,9 +25,26 @@ func RegisterUsersHandlers(e *echo.Group) {
 	e.GET("/auth/signout", signout)
 	e.GET("/auth/whoami", whoami)
 
+	e.GET("/auth/check-name/:name", checkUsername)
+
 	// TODO
 	// forgoten password
 	// add a check username exist to use at signup
+}
+
+func checkUsername(c echo.Context) error {
+	name := c.Param("name")
+	_, err := models.QUERIES.GetUserByName(models.CTX, name)
+	if err != nil {
+		return c.JSON(http.StatusOK, echo.Map{
+			"message": "Didn't find name",
+			"exist": false,
+		})
+	}
+	return c.JSON(http.StatusOK, echo.Map{
+		"message": "Found name",
+		"exist": true,
+	})
 }
 
 func signup(c echo.Context) error {
@@ -150,12 +167,20 @@ func whoami(c echo.Context) error {
 	cookie, err := c.Cookie("Authorization")
 	// TODO return user null rather than error status
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Authorization Cookie not found")
+		// return echo.NewHTTPError(http.StatusBadRequest, "Authorization Cookie not found")
+		return c.JSON(http.StatusOK, echo.Map{
+			"message": "Authorization Cookie not found",
+			"user": nil,
+		})
 	}
 	session_uuid := cookie.Value  // uuid
 	user, err := models.QUERIES.GetUserBySession(models.CTX, &session_uuid)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusNotFound, "Failed to find user")
+		// return echo.NewHTTPError(http.StatusNotFound, "Failed to find user")
+		return c.JSON(http.StatusOK, echo.Map{
+			"message": "Failed to find user",
+			"user": nil,
+		})
 	}
 	return c.JSON(http.StatusOK, echo.Map{
 		"message": "found whoami",
@@ -182,13 +207,19 @@ func AuthenticatedMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 func signout(c echo.Context) error {
 	cookie, err := c.Cookie("Authorization")
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Already Signed out")
+		// return echo.NewHTTPError(http.StatusBadRequest, "Already Signed out")
+		return c.JSON(http.StatusOK, echo.Map{
+			"message": "Already Signed out",
+		})
 	}
 
 	session_uuid := cookie.Value
 	user, err := models.QUERIES.GetUserBySession(models.CTX, &session_uuid)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Already Signed out")
+		// return echo.NewHTTPError(http.StatusBadRequest, "Already Signed out")
+		return c.JSON(http.StatusOK, echo.Map{
+			"message": "Already Signed out",
+		})
 	}
 
 	// remove session from users table
@@ -199,7 +230,7 @@ func signout(c echo.Context) error {
 
 	err = models.QUERIES.UpdateUserSession(models.CTX, emptySession)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Failed to remove session" + err.Error())
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to remove session" + err.Error())
 	}
 
 	// unset cookie

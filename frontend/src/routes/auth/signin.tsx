@@ -34,7 +34,8 @@ const Schema = z.object({
 type InputType = z.infer<typeof Schema>;
 
 function SignIn() {
-  const [isVisiblePass, setIsVisiblePass] = useState(true);
+  const [isVisiblePass, setIsVisiblePass] = useState(false);
+
   const {
     register,
     handleSubmit,

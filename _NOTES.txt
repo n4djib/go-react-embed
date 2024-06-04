@@ -107,17 +107,31 @@ go get github.com/google/uuid
 
 
 ==================
-- database file should be embeded in exe (as a starting db)
-    and copied to drive if not existing
-    maybe do the same for ENV file
-- script to build react when building GO
-- create AUTH system
-- Badger & Bolt
-  LMDB in memory is faster
+      - database file should be embeded in exe (as a starting db)
+          and copied to drive if not existing
+          maybe do the same for ENV file
+      - script to build react when building GO
+      - create AUTH system
+- auth roles
 - add email
 - add config options when starting the app
 - validate env variables
 - sanitize input
+- Badger & Bolt
+  LMDB in memory is faster
+- 
+- embed the expiration date in the session starting
+  if session expired server side, you must nullify it and set the cookie
+    check it in middleware expiration expiration middleware
+      check the cookie first  
+        if empty or expired => nullify
+      if found and not expired 
+        => check database 
+          => return that it is  
+- maybe store more info in other cookies
+  no need, i am using Whoami
+- try to serve the pages statically only in production
+  embed only in production
 - 
 - 
 - 

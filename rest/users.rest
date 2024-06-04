@@ -1,6 +1,9 @@
 @baseUrl = https://localhost:8080
 
 
+### Check Username Existance
+{{baseUrl}}/api/auth/check-name/nad
+
 ### Sign-up
 POST {{baseUrl}}/api/auth/signup
 Content-Type: application/json
