@@ -34,23 +34,12 @@ func getPokemonsHandler(c echo.Context) error {
 
 	allPokemonsNames, err := models.QUERIES.ListPokemonsNames(models.CTX)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, Error{
-			Error: err.Error(),
-		})
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 	pokemons, err := models.QUERIES.ListPokemonsOffset(models.CTX, args)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, Error{
-			Error: err.Error(),
-		})
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
-	// data := DataList{
-	// 	Count:  len(allPokemonsNames),
-	// 	Limit:  int(limit),
-	// 	Offset: int(offset),
-	// 	Data:   pokemons,
-	// }
-	// return c.JSON(http.StatusOK, data)
 	return c.JSON(http.StatusOK, echo.Map{
 		"count": len(allPokemonsNames),
 		"limit": int(limit),
@@ -69,10 +58,6 @@ func getPokemonHandler(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusNotFound, "no rows in result set")
 	}
-	// result := Result{
-	// 	Result: pokemon,
-	// }
-	// return c.JSON(http.StatusOK, result)
 	return c.JSON(http.StatusOK, echo.Map{
 		"result": pokemon,
 	})
@@ -84,10 +69,6 @@ func getPokemonByNameHandler(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusNotFound, "no rows in result set")
 	}
-	// data := Data{
-	// 	Data: pokemon,
-	// }
-	// return c.JSON(http.StatusOK, data)
 	return c.JSON(http.StatusOK, echo.Map{
 		"result": pokemon,
 	})
