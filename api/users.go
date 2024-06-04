@@ -27,9 +27,7 @@ func RegisterUsersHandlers(e *echo.Group) {
 
 	e.GET("/auth/check-name/:name", checkUsername)
 
-	// TODO
-	// forgoten password
-	// add a check username exist to use at signup
+	// TODO forgoten password
 }
 
 func checkUsername(c echo.Context) error {
@@ -37,12 +35,12 @@ func checkUsername(c echo.Context) error {
 	_, err := models.QUERIES.GetUserByName(models.CTX, name)
 	if err != nil {
 		return c.JSON(http.StatusOK, echo.Map{
-			"message": "Didn't find name",
+			"message": "this name is available",
 			"exist": false,
 		})
 	}
 	return c.JSON(http.StatusOK, echo.Map{
-		"message": "Found name",
+		"message": "found name",
 		"exist": true,
 	})
 }
@@ -54,7 +52,7 @@ func signup(c echo.Context) error {
 	}
 	// Validate the data
 	if err := validate.Struct(body); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "bad request, failed to validate")
+		return echo.NewHTTPError(http.StatusBadRequest, "failed to validate, " + err.Error())
 	}
 	// check user name doesn't exist
 	foundUser, err := models.QUERIES.GetUserByName(models.CTX, body.Name)
@@ -104,7 +102,7 @@ func signin(c echo.Context) error {
 	}
 	// Validate the data
 	if err := validate.Struct(body); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "bad request, " + err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, "failed to validate, " + err.Error())
 	}
 
 	// check user name exist
@@ -165,9 +163,7 @@ func signin(c echo.Context) error {
 
 func whoami(c echo.Context) error {
 	cookie, err := c.Cookie("Authorization")
-	// TODO return user null rather than error status
 	if err != nil {
-		// return echo.NewHTTPError(http.StatusBadRequest, "Authorization Cookie not found")
 		return c.JSON(http.StatusOK, echo.Map{
 			"message": "Authorization Cookie not found",
 			"user": nil,
@@ -176,14 +172,13 @@ func whoami(c echo.Context) error {
 	session_uuid := cookie.Value  // uuid
 	user, err := models.QUERIES.GetUserBySession(models.CTX, &session_uuid)
 	if err != nil {
-		// return echo.NewHTTPError(http.StatusNotFound, "Failed to find user")
 		return c.JSON(http.StatusOK, echo.Map{
 			"message": "Failed to find user",
 			"user": nil,
 		})
 	}
 	return c.JSON(http.StatusOK, echo.Map{
-		"message": "found whoami",
+		"message": "Found whoami",
 		"user": user,
 	})
 }
@@ -198,7 +193,7 @@ func AuthenticatedMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		session_uuid := cookie.Value  // uuid
 		_, err = models.QUERIES.GetUserBySession(models.CTX, &session_uuid)
 		if err != nil {
-			return echo.NewHTTPError(http.StatusInternalServerError, "Failed to find user 1, " + err.Error())
+			return echo.NewHTTPError(http.StatusInternalServerError, "Failed to find user, " + err.Error())
 		}
 		return next(c)
 	}
@@ -207,7 +202,6 @@ func AuthenticatedMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 func signout(c echo.Context) error {
 	cookie, err := c.Cookie("Authorization")
 	if err != nil {
-		// return echo.NewHTTPError(http.StatusBadRequest, "Already Signed out")
 		return c.JSON(http.StatusOK, echo.Map{
 			"message": "Already Signed out",
 		})
@@ -216,7 +210,6 @@ func signout(c echo.Context) error {
 	session_uuid := cookie.Value
 	user, err := models.QUERIES.GetUserBySession(models.CTX, &session_uuid)
 	if err != nil {
-		// return echo.NewHTTPError(http.StatusBadRequest, "Already Signed out")
 		return c.JSON(http.StatusOK, echo.Map{
 			"message": "Already Signed out",
 		})
@@ -230,7 +223,7 @@ func signout(c echo.Context) error {
 
 	err = models.QUERIES.UpdateUserSession(models.CTX, emptySession)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to remove session" + err.Error())
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to remove session, " + err.Error())
 	}
 
 	// unset cookie
@@ -303,18 +296,18 @@ func updateUserHandler(c echo.Context) error {
 	}
 	// Validate the data
 	if err := validate.Struct(body); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "bad request")
-	} // TODO combine the two tests
+		return echo.NewHTTPError(http.StatusBadRequest, "failed to validate, " + err.Error())
+	}
 
 	hash, err := hashPassword(body.Password)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to hash password")
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to hash password")
 	}
 	body.Password = hash
 
 	user, err := models.QUERIES.UpdateUser(models.CTX, body)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to update")
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to update")
 	}
 	return c.JSON(http.StatusOK, echo.Map{
 		"message": "updated successfully",
@@ -329,11 +322,11 @@ func updateUserActiveStateHandler(c echo.Context) error {
 	}
 	// Validate the data
 	if err := validate.Struct(body); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "faled to validate " + err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, "failed to validate, " + err.Error())
 	}
 	err := models.QUERIES.UpdateUserActiveState(models.CTX, body)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "faled to update " + err.Error())
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to update " + err.Error())
 	}
 	return c.JSON(http.StatusOK, echo.Map{
 		"message": "updated status successfully",
@@ -348,7 +341,7 @@ func deleteUserHandler(c echo.Context) error {
 	}
 	err = models.QUERIES.DeleteUser(models.CTX, id)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "faled to delete " + err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, "failed to delete " + err.Error())
 	}
 	return c.JSON(http.StatusOK, echo.Map{
 		"message": "deleted successfully",

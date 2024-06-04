@@ -95,7 +95,6 @@ export const useUserWhoami = () => {
         throw error;
       }
     },
-    // FIXME problem - it retries 3 more times if it throws error
     // retry: false,
   });
 

@@ -1,5 +1,4 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-// FIXME import size is huge
 import { Button, Input } from "@material-tailwind/react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Eye, EyeOff, User } from "lucide-react";
