@@ -19,6 +19,31 @@ INSERT OR IGNORE INTO users (id, name, password, is_active) VALUES
 
 
 
+
+CREATE TABLE IF NOT EXISTS roles(
+  id          INTEGER PRIMARY KEY,
+  role        TEXT UNIQUE NOT NULL,
+  description TEXT
+);
+
+INSERT OR IGNORE INTO roles (id, role) VALUES
+  (1, "USER"), (2, "ADMIN"), (3, "MANAGER");
+
+
+CREATE TABLE IF NOT EXISTS user_roles(
+  user_id,
+  role_id,
+  PRIMARY KEY (user_id, role_id),
+  FOREIGN KEY (user_id) REFERENCES users (id) ON UPDATE CASCADE ON DELETE CASCADE,
+  FOREIGN KEY (role_id) REFERENCES roles (id) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+INSERT OR IGNORE INTO user_roles (user_id, role_id) VALUES
+  (3, 2), (3, 3), (2, 1);
+
+
+
+
 CREATE TABLE IF NOT EXISTS pokemons (
   id    INTEGER PRIMARY KEY AUTOINCREMENT,
   name  TEXT UNIQUE NOT NULL,

@@ -71,6 +71,7 @@ function SignIn() {
         const contextUser: ContextUserType = {
           id: result.user.id,
           name: result.user.name,
+          roles: result.roles,
         };
 
         login(contextUser);

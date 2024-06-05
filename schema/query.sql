@@ -39,6 +39,14 @@ DELETE FROM users WHERE id = ?;
 -----------------------------------------
 -----------------------------------------
 
+-- name: GetUserRoles :many
+select role from roles join user_roles on roles.id == user_roles.role_id 
+ where user_roles.user_id == ?;
+
+
+-----------------------------------------
+-----------------------------------------
+
 -- name: GetPokemon :one
 SELECT * FROM pokemons WHERE id = ? LIMIT 1;
 
@@ -56,3 +64,4 @@ SELECT * FROM pokemons ORDER BY id LIMIT ? OFFSET ?;
 
 -- name: ListPokemonsNames :many
 SELECT name FROM pokemons
+

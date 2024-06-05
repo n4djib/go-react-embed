@@ -192,6 +192,37 @@ func (q *Queries) GetUserBySession(ctx context.Context, session *string) (GetUse
 	return i, err
 }
 
+const getUserRoles = `-- name: GetUserRoles :many
+
+select role from roles join user_roles on roles.id == user_roles.role_id 
+ where user_roles.user_id == ?
+`
+
+// ---------------------------------------
+// ---------------------------------------
+func (q *Queries) GetUserRoles(ctx context.Context, userID interface{}) ([]string, error) {
+	rows, err := q.db.QueryContext(ctx, getUserRoles, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var role string
+		if err := rows.Scan(&role); err != nil {
+			return nil, err
+		}
+		items = append(items, role)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getUserWithPassword = `-- name: GetUserWithPassword :one
 SELECT id, name, password, is_active, session, logged_at, created_at FROM users WHERE id = ? LIMIT 1
 `

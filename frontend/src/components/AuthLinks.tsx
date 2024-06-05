@@ -11,8 +11,6 @@ const activeProps = {
 const AuthLinks = () => {
   const { user, login } = useAuth();
   const { data, isLoading } = useUserWhoami();
-  // const { logout } = useAuth();
-  // const navigate = useNavigate();
 
   if (isLoading)
     <div className="flex gap-2 items-center ml-auto">Loading...</div>;
@@ -22,14 +20,13 @@ const AuthLinks = () => {
       const user: ContextUserType = {
         id: data.id,
         name: data.name,
+        roles: data.roles,
       };
       login(user);
     }
   }, [data]);
 
   const handleSignOut = () => {
-    // logout();
-    // navigate({ to: "/", replace: true });
     toast.success("Logged out successfully");
   };
 

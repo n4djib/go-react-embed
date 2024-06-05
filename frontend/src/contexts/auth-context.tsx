@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState } from "react";
 export type ContextUserType = {
   id: number;
   name: string;
+  roles: string[] | null;
 };
 
 type AuthContextType = {

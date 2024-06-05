@@ -153,15 +153,23 @@ func signin(c echo.Context) error {
 	// set cookies
 	c.SetCookie(cookie)
 
+	roles, err := models.QUERIES.GetUserRoles(models.CTX, user.ID)
+	if err != nil {
+		return c.JSON(http.StatusOK, echo.Map{
+			"message": "Failed to find user",
+			"user": nil,
+			"roles": nil,
+		})
+	}
+
 	user.Password = "[HIDDEN]"
 	user.Session = &session_uuid
 	return c.JSON(http.StatusOK, echo.Map{
 		"message": "Signed in successfully",
 		"user": user,
+		"roles": roles,
 	})
 }
-
-
 
 func whoami(c echo.Context) error {
 	cookie, err := c.Cookie("Authorization")
@@ -196,9 +204,19 @@ func whoami(c echo.Context) error {
 		signout(c)
 	}
 
+	roles, err := models.QUERIES.GetUserRoles(models.CTX, user.ID)
+	if err != nil {
+		return c.JSON(http.StatusOK, echo.Map{
+			"message": "Failed to find user",
+			"user": nil,
+			"roles": nil,
+		})
+	}
+
 	return c.JSON(http.StatusOK, echo.Map{
 		"message": "Found whoami",
 		"user": user,
+		"roles": roles,
 	})
 }
 

@@ -10,6 +10,10 @@ export type User = {
   password: string;
 };
 
+export type UserWithRoles = User & {
+  roles: string[];
+};
+
 type UserResult = {
   result: User;
 };
@@ -90,7 +94,10 @@ export const useUserWhoami = () => {
         }
         if (!response.ok) throw new Error(data.message);
 
-        return data.user as User;
+        // return data.user as User;
+        const user: UserWithRoles = data.user;
+        user.roles = data.roles;
+        return user;
       } catch (error) {
         throw error;
       }

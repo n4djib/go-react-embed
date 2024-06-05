@@ -14,6 +14,12 @@ type Pokemon struct {
 	Image string `db:"image" json:"image"`
 }
 
+type Role struct {
+	ID          int64   `db:"id" json:"id"`
+	Role        string  `db:"role" json:"role"`
+	Description *string `db:"description" json:"description"`
+}
+
 type User struct {
 	ID        int64      `db:"id" json:"id"`
 	Name      string     `db:"name" json:"name" validate:"required"`
@@ -22,4 +28,9 @@ type User struct {
 	Session   *string    `db:"session" json:"session"`
 	LoggedAt  *time.Time `db:"logged_at" json:"logged_at"`
 	CreatedAt *time.Time `db:"created_at" json:"created_at"`
+}
+
+type UserRole struct {
+	UserID interface{} `db:"user_id" json:"user_id"`
+	RoleID interface{} `db:"role_id" json:"role_id"`
 }
