@@ -102,6 +102,15 @@ go get github.com/golang-jwt/jwt/v5
 go get github.com/google/uuid
 
 
+== swagger
+go install github.com/swaggo/swag/cmd/swag@latest
+
+swag init
+
+go get -u github.com/swaggo/echo-swagger
+
+
+
 
 
 
@@ -112,27 +121,22 @@ go get github.com/google/uuid
           maybe do the same for ENV file
       - script to build react when building GO
       - create AUTH system
-- auth roles
+      - auth roles
+      - sanitize input
+          it seems like sqlc is fine
 - add email
-- add config options when starting the app
+    email verification
+    but this app is deployed locally, so i don't need the email
+- config options when starting the app
+    CLI interactions
 - validate env variables
-- sanitize input
 - Badger & Bolt
-  LMDB in memory is faster
-- 
-- embed the expiration date in the session starting
-  if session expired server side, you must nullify it and set the cookie
-    check it in middleware expiration expiration middleware
-      check the cookie first  
-        if empty or expired => nullify
-      if found and not expired 
-        => check database 
-          => return that it is  
+    LMDB in memory is faster
 - maybe store more info in other cookies
-  no need, i am using Whoami
+    no need, i am using Whoami
 - try to serve the pages statically only in production
-  embed only in production
-- 
+    embed only in production
+- swagger
 - 
 - 
 - 

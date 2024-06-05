@@ -12,8 +12,17 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	echoSwagger "github.com/swaggo/echo-swagger"
+
+	_ "go-react-embed/docs"
 )
 
+// TODO add swag init to build
+
+// @title GO-REACT-EMBED API
+// @version 1.0
+// @description this is the API for the backend.
+// @termsOfService http://swagger.io/terms/
 func main() {
 	// load .env file
 	err := initAndLoadEnv()
@@ -36,6 +45,7 @@ func main() {
 	// }
 
 	// registering bachend routes routes
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
 	e.GET("/ping", pong)
 	api.RegisterPokemonsHandlers(e.Group("/api"))
 	api.RegisterUsersHandlers(e.Group("/api"))

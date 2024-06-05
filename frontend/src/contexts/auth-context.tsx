@@ -24,6 +24,7 @@ export const AuthContext = createContext<AuthContextType | undefined>(
   undefined
 );
 
+// FIXME how to use ENV of Golang
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const CREDENTIALS = import.meta.env.VITE_CREDENTIALS;
 

@@ -1,0 +1,83 @@
+definitions:
+  api.PokemonResult:
+    properties:
+      result:
+        $ref: '#/definitions/models.Pokemon'
+    type: object
+  models.Pokemon:
+    properties:
+      id:
+        type: integer
+      image:
+        type: string
+      name:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: this is the API for the backend.
+  termsOfService: http://swagger.io/terms/
+  title: GO-REACT-EMBED API
+  version: "1.0"
+paths:
+  /api/pokemons:
+    get:
+      description: List all pokemons (limit & offset)
+      parameters:
+      - description: 'Limit: default 10'
+        in: query
+        name: limit
+        type: integer
+      - description: 'Offset: default 0'
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+      summary: Get All Pokemons
+      tags:
+      - Pokemons
+  /api/pokemons/{id}:
+    get:
+      description: get pokemon by ID as param path
+      parameters:
+      - description: ID of a pokemon
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.PokemonResult'
+      summary: Get Pokemon by ID
+      tags:
+      - Pokemons
+  /api/pokemons/name/{name}:
+    get:
+      description: get pokemon by Name as param path
+      parameters:
+      - description: Name of a pokemon
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.PokemonResult'
+      summary: Get Pokemon by Name
+      tags:
+      - Pokemons
+swagger: "2.0"
