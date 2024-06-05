@@ -5,11 +5,10 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, User } from "lucide-react";
 import { useEffect, useState } from "react";
-import { ContextUserType, useAuth } from "../../contexts/auth-context";
+import { useAuth } from "../../contexts/auth-context";
 
 // FIXME import size is huge
 import { Button, Input } from "@material-tailwind/react";
-import toast from "react-hot-toast";
 // const Button = lazy(() =>
 //   import("@material-tailwind/react").then((module) => ({
 //     default: module.Button,
@@ -52,37 +51,8 @@ function SignIn() {
     }
   }, [user]);
 
-  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-  const CREDENTIALS = import.meta.env.VITE_CREDENTIALS;
-
   const signIn: SubmitHandler<InputType> = async (data) => {
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/auth/signin`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: CREDENTIALS,
-        body: JSON.stringify(data),
-      });
-      const result = await response.json();
-
-      if (response.ok) {
-        const contextUser: ContextUserType = {
-          id: result.user.id,
-          name: result.user.name,
-          roles: result.roles,
-        };
-
-        login(contextUser);
-
-        toast.success(result.message);
-      } else {
-        toast.error(result?.message || "err");
-      }
-    } catch (error) {
-      console.log("error:", error);
-    }
+    login(data);
   };
 
   return (

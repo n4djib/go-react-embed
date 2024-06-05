@@ -15,13 +15,5 @@ function SignOut() {
     navigate({ to: "/", replace: true });
   }, []);
 
-  // toast.success("Logged out successfully");
-
   return null;
-
-  // return (
-  //   <div>
-  //     Signing Out
-  //   </div>
-  // );
 }

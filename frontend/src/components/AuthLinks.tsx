@@ -1,34 +1,15 @@
 import { Link } from "@tanstack/react-router";
-import { ContextUserType, useAuth } from "../contexts/auth-context";
-import { useUserWhoami } from "../lib/tanstack-query/users";
-import { useEffect } from "react";
-import toast from "react-hot-toast";
+import { useAuth } from "../contexts/auth-context";
 
 const activeProps = {
   className: "font-bold underline",
 };
 
 const AuthLinks = () => {
-  const { user, login } = useAuth();
-  const { data, isLoading } = useUserWhoami();
+  const { user, isLoading } = useAuth();
 
   if (isLoading)
     <div className="flex gap-2 items-center ml-auto">Loading...</div>;
-
-  useEffect(() => {
-    if (data) {
-      const user: ContextUserType = {
-        id: data.id,
-        name: data.name,
-        roles: data.roles,
-      };
-      login(user);
-    }
-  }, [data]);
-
-  const handleSignOut = () => {
-    toast.success("Logged out successfully");
-  };
 
   if (!user) {
     return (
@@ -45,16 +26,9 @@ const AuthLinks = () => {
 
   return (
     <div className="flex gap-2 items-center ml-auto">
-      <Link
-        to="/auth/signout"
-        activeProps={activeProps}
-        onClick={handleSignOut}
-      >
+      <Link to="/auth/signout" activeProps={activeProps}>
         Sign Out
       </Link>
-      {/* <div className="cursor-pointe" onClick={handleSignOut}>
-        Sign Out
-      </div> */}
     </div>
   );
 };
