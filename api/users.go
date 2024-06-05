@@ -161,6 +161,8 @@ func signin(c echo.Context) error {
 	})
 }
 
+
+
 func whoami(c echo.Context) error {
 	cookie, err := c.Cookie("Authorization")
 	if err != nil {
@@ -177,6 +179,23 @@ func whoami(c echo.Context) error {
 			"user": nil,
 		})
 	}
+
+	// check if session expired
+	COOKIE_EXP_MINUTES := os.Getenv("COOKIE_EXP_MINUTES")
+	if len(COOKIE_EXP_MINUTES) < 1 {
+		return echo.NewHTTPError(http.StatusInternalServerError, "COOKIE_EXP_MINUTES, can't be found.")
+	}
+	// convert to int
+	expMinutes, err := strconv.ParseInt(COOKIE_EXP_MINUTES, 10, 64)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "COOKIE_EXP_MINUTES, can't be converted.")
+	}
+	expiration := user.LoggedAt.Add(time.Minute * time.Duration(expMinutes))
+
+	if expiration.Before(time.Now()) {
+		signout(c)
+	}
+
 	return c.JSON(http.StatusOK, echo.Map{
 		"message": "Found whoami",
 		"user": user,
