@@ -74,6 +74,7 @@ function PokemonListItem({ pokemon }: { pokemon: Pokemon }) {
     <Link to="/pokemons/$id" params={{ id: `${pokemon.id}` }}>
       <ListItem>
         <ListItemPrefix>
+          {/* FIXME overflow is not working in firefox */}
           <Avatar
             variant="square"
             alt={pokemon.name}
