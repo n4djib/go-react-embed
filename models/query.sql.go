@@ -411,8 +411,9 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (UpdateU
 	return i, err
 }
 
-const updateUserActiveState = `-- name: UpdateUserActiveState :exec
+const updateUserActiveState = `-- name: UpdateUserActiveState :one
 UPDATE users set is_active = ? WHERE id = ?
+RETURNING id, name, is_active, session, logged_at, created_at
 `
 
 type UpdateUserActiveStateParams struct {
@@ -420,9 +421,27 @@ type UpdateUserActiveStateParams struct {
 	ID       int64 `db:"id" json:"id"`
 }
 
-func (q *Queries) UpdateUserActiveState(ctx context.Context, arg UpdateUserActiveStateParams) error {
-	_, err := q.db.ExecContext(ctx, updateUserActiveState, arg.IsActive, arg.ID)
-	return err
+type UpdateUserActiveStateRow struct {
+	ID        int64      `db:"id" json:"id"`
+	Name      string     `db:"name" json:"name" validate:"required"`
+	IsActive  *bool      `db:"is_active" json:"is_active"`
+	Session   *string    `db:"session" json:"session"`
+	LoggedAt  *time.Time `db:"logged_at" json:"logged_at"`
+	CreatedAt *time.Time `db:"created_at" json:"created_at"`
+}
+
+func (q *Queries) UpdateUserActiveState(ctx context.Context, arg UpdateUserActiveStateParams) (UpdateUserActiveStateRow, error) {
+	row := q.db.QueryRowContext(ctx, updateUserActiveState, arg.IsActive, arg.ID)
+	var i UpdateUserActiveStateRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.IsActive,
+		&i.Session,
+		&i.LoggedAt,
+		&i.CreatedAt,
+	)
+	return i, err
 }
 
 const updateUserSession = `-- name: UpdateUserSession :exec

@@ -296,13 +296,13 @@ func updateUserActiveStateHandler(c echo.Context) error {
 	if err := validate.Struct(body); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "failed to validate, " + err.Error())
 	}
-	// FIXME no error if user not found
-	// it returns updated successfully
-	// it should notify that the user doesn't exist
-	// solution: return user in sql to force err
-	err := models.QUERIES.UpdateUserActiveState(models.CTX, body)
+	_, err := models.QUERIES.UpdateUserActiveState(models.CTX, body)
+	if err != nil && err.Error() != "sql: no rows in result set" {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	// user not found
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "failed to update " + err.Error())
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to update, " + err.Error())
 	}
 	return c.JSON(http.StatusOK, echo.Map{
 		"message": "updated status successfully",

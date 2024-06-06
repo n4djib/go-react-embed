@@ -129,6 +129,7 @@ go get -u github.com/swaggo/echo-swagger
     but this app is deployed locally, so i don't need the email
 - config options when starting the app
     CLI interactions
+    set user password
 - validate env variables
 - Badger & Bolt
     LMDB in memory is faster

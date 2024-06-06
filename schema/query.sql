@@ -30,8 +30,9 @@ RETURNING id, name, is_active, session, logged_at, created_at;
 -- name: UpdateUserSession :exec
 UPDATE users set session = ?, logged_at = ? WHERE id = ?;
 
--- name: UpdateUserActiveState :exec
-UPDATE users set is_active = ? WHERE id = ?;
+-- name: UpdateUserActiveState :one
+UPDATE users set is_active = ? WHERE id = ?
+RETURNING id, name, is_active, session, logged_at, created_at;
 
 -- name: DeleteUser :exec
 DELETE FROM users WHERE id = ?;
