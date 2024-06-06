@@ -35,11 +35,13 @@ func main() {
 
 	// create echo app
 	e := echo.New()
+	e.Use(api.CurrentAuthUserMiddleware)
 	// middlewares
 	e.Use(loggingMiddleware)
 	e.Pre(middleware.RemoveTrailingSlash())
 	// CORS
 	useCORSMiddleware(e)
+	// TODO show it in DEV & SHOW(env)
 	// if os.Getenv("MODE") == "DEV" {
 	// 	e.Use(middleware.BodyDump(bodyDump))
 	// }
@@ -47,7 +49,7 @@ func main() {
 	// registering bachend routes routes
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 	e.GET("/ping", pong)
-	api.RegisterPokemonsHandlers(e.Group("/api"))
+	api.RegisterPokemonsHandlers(e.Group("/api", api.AuthenticatedMiddleware))
 	api.RegisterUsersHandlers(e.Group("/api"))
 	api.RegisterAuthsHandlers(e.Group("/api"))
 

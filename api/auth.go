@@ -28,6 +28,70 @@ func RegisterAuthsHandlers(e *echo.Group) {
 	// TODO limit signup tries
 }
 
+type ContextUser struct {
+	ID int64
+	Name string
+	Roles []string
+}
+
+type CustomContextUser struct {
+	echo.Context
+	user ContextUser
+}
+
+// middleware extends the context by adding the authenticated user
+func CurrentAuthUserMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		ccu := &CustomContextUser{
+			c, 
+			ContextUser{},
+		}
+
+		cookie, err := c.Cookie("Authorization")
+		if err != nil {
+			return next(ccu)
+		}
+		session_uuid := cookie.Value  // uuid
+		user, err := models.QUERIES.GetUserBySession(models.CTX, &session_uuid)
+		if err != nil {
+			return next(ccu)
+		}
+
+		// get user roles
+		roles, _ := models.QUERIES.GetUserRoles(models.CTX, user.ID)
+		// if err != nil {
+		// 	return echo.NewHTTPError(http.StatusInternalServerError, "Failed to find roles, " + err.Error())
+		// }
+
+		cu := &ContextUser{
+			user.ID,
+			user.Name,
+			roles,
+		}
+
+		ccu.user = *cu
+
+		return next(ccu)
+	}
+}
+
+// AuthenticatedMiddleware checks if token is valid
+func AuthenticatedMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		ccu := c.(*CustomContextUser)
+
+		// check if authenticated
+		if ccu.user.ID == 0 {
+		    return echo.NewHTTPError(http.StatusUnauthorized, "Not Authenticated")
+		}
+
+		return next(c)
+	}
+}
+
+
+
+
 func checkUsername(c echo.Context) error {
 	name := c.Param("name")
 	_, err := models.QUERIES.GetUserByName(models.CTX, name)
@@ -216,22 +280,6 @@ func whoami(c echo.Context) error {
 		"user": user,
 		"roles": roles,
 	})
-}
-
-// AuthenticatedMiddleware checks if token is valid
-func AuthenticatedMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		cookie, err := c.Cookie("Authorization")
-		if err != nil {
-			return echo.NewHTTPError(http.StatusForbidden, "Authorization Cookie not found, " + err.Error())
-		}
-		session_uuid := cookie.Value  // uuid
-		_, err = models.QUERIES.GetUserBySession(models.CTX, &session_uuid)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusInternalServerError, "Failed to find user, " + err.Error())
-		}
-		return next(c)
-	}
 }
 
 func signout(c echo.Context) error {
