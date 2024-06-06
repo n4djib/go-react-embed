@@ -49,6 +49,7 @@ func main() {
 	e.GET("/ping", pong)
 	api.RegisterPokemonsHandlers(e.Group("/api"))
 	api.RegisterUsersHandlers(e.Group("/api"))
+	api.RegisterAuthsHandlers(e.Group("/api"))
 
 	// register react static pages build from react tanstack router
 	frontend.RegisterHandlers(e)

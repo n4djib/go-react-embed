@@ -23,7 +23,7 @@ Content-Type: application/json
 }
 
 ### Activate User
-PUT {{baseUrl}}/api/users/active-state
+PUT {{baseUrl}}/api/auth/active-state
 Content-Type: application/json
 
 {
