@@ -1,0 +1,41 @@
+@baseUrl = https://localhost:8080
+
+
+### Check Username Existance
+{{baseUrl}}/api/auth/check-name/nad
+
+### Sign-up
+POST {{baseUrl}}/api/auth/signup
+Content-Type: application/json
+
+{
+    "name": "n4djib4",
+    "password": "123456"
+}
+
+### Sign-in (login)
+POST {{baseUrl}}/api/auth/signin
+Content-Type: application/json
+
+{
+    "name": "n4djib3",
+    "password": "123456"
+}
+
+### Activate User
+PUT {{baseUrl}}/api/auth/active-state
+Content-Type: application/json
+
+{
+    "id": 2,
+    "is_active": true
+}
+
+### Who Am I
+GET {{baseUrl}}/api/auth/whoami
+
+### get all users (testing authenticated)
+{{baseUrl}}/api/users
+
+### Sign-out (logout)
+{{baseUrl}}/api/auth/signout
