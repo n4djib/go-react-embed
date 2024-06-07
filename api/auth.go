@@ -13,7 +13,6 @@ import (
 )
 
 func RegisterAuthsHandlers(e *echo.Group) {
-	// /api/auth
 	e.POST("/auth/signup", signup)
 	e.POST("/auth/signin", signin)
 	e.GET("/auth/signout", signout)
@@ -31,6 +30,8 @@ func RegisterAuthsHandlers(e *echo.Group) {
 type ContextUser struct {
 	ID int64
 	Name string
+	IsActive *bool
+	LoggedAt *time.Time
 	Roles []string
 }
 
@@ -66,9 +67,11 @@ func CurrentAuthUserMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		cu := &ContextUser{
 			user.ID,
 			user.Name,
+			user.IsActive,
+			user.LoggedAt,
 			roles,
 		}
-
+		
 		ccu.user = *cu
 
 		return next(ccu)
@@ -88,9 +91,6 @@ func AuthenticatedMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		return next(c)
 	}
 }
-
-
-
 
 func checkUsername(c echo.Context) error {
 	name := c.Param("name")
@@ -234,6 +234,8 @@ func signin(c echo.Context) error {
 }
 
 func whoami(c echo.Context) error {
+	// TODO get it from context not cookie
+	// don't forget to check the session expiration
 	cookie, err := c.Cookie("Authorization")
 	if err != nil {
 		return c.JSON(http.StatusOK, echo.Map{
