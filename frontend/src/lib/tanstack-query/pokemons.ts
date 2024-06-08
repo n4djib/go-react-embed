@@ -10,6 +10,7 @@ import {
 // };
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const CREDENTIALS = import.meta.env.VITE_CREDENTIALS;
 
 export type Pokemon = {
   id: number;
@@ -40,7 +41,9 @@ export const usePokemonList = ({ limit, offset }: UsePokemonListProps) => {
     queryKey: ["pokemons"],
     queryFn: async () => {
       try {
-        const response = await fetch(url);
+        const response = await fetch(url, {
+          credentials: CREDENTIALS,
+        });
         const data = await response.json();
         // TODO handle error
         return data as PokemonsResult;
@@ -58,7 +61,9 @@ export const usePokemon = (id: number) => {
     queryKey: ["pokemon", id],
     queryFn: async () => {
       try {
-        const response = await fetch(url);
+        const response = await fetch(url, {
+          credentials: CREDENTIALS,
+        });
         const data = await response.json();
         if (!response.ok) {
           throw new Error(data.message);
