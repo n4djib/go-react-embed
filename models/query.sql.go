@@ -53,6 +53,89 @@ func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
 	return err
 }
 
+const getPermissionsParents = `-- name: GetPermissionsParents :many
+SELECT p.id, p.permission, p.rule, pc.permission_id AS parent
+    FROM permissions p 
+    LEFT JOIN permission_child pc ON p.id = pc.child_permission_id
+`
+
+type GetPermissionsParentsRow struct {
+	ID         int64   `db:"id" json:"id"`
+	Permission string  `db:"permission" json:"permission"`
+	Rule       *string `db:"rule" json:"rule"`
+	Parent     *int64  `db:"parent" json:"parent"`
+}
+
+func (q *Queries) GetPermissionsParents(ctx context.Context) ([]GetPermissionsParentsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getPermissionsParents)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPermissionsParentsRow
+	for rows.Next() {
+		var i GetPermissionsParentsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Permission,
+			&i.Rule,
+			&i.Parent,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getPermissionsRoles = `-- name: GetPermissionsRoles :many
+SELECT p.id, p.permission, rp.role_id AS role_id, r.role 
+    FROM permissions p
+    JOIN role_permissions rp ON p.id = rp.permission_id
+    JOIN roles r ON rp.role_id = r.id
+`
+
+type GetPermissionsRolesRow struct {
+	ID         int64  `db:"id" json:"id"`
+	Permission string `db:"permission" json:"permission"`
+	RoleID     int64  `db:"role_id" json:"role_id"`
+	Role       string `db:"role" json:"role"`
+}
+
+func (q *Queries) GetPermissionsRoles(ctx context.Context) ([]GetPermissionsRolesRow, error) {
+	rows, err := q.db.QueryContext(ctx, getPermissionsRoles)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPermissionsRolesRow
+	for rows.Next() {
+		var i GetPermissionsRolesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Permission,
+			&i.RoleID,
+			&i.Role,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getPokemon = `-- name: GetPokemon :one
 
 SELECT id, name, image FROM pokemons WHERE id = ? LIMIT 1
@@ -87,6 +170,45 @@ func (q *Queries) GetPokemonWithPassword(ctx context.Context, id int64) (Pokemon
 	var i Pokemon
 	err := row.Scan(&i.ID, &i.Name, &i.Image)
 	return i, err
+}
+
+const getRolesParents = `-- name: GetRolesParents :many
+
+SELECT r.id, r.role, rc.role_id AS parent 
+  FROM roles r 
+  LEFT JOIN role_child rc ON r.id = rc.child_role_id
+`
+
+type GetRolesParentsRow struct {
+	ID     int64  `db:"id" json:"id"`
+	Role   string `db:"role" json:"role"`
+	Parent *int64 `db:"parent" json:"parent"`
+}
+
+// ---------------------------------------
+// ---------------------------------------
+// RBAC
+func (q *Queries) GetRolesParents(ctx context.Context) ([]GetRolesParentsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getRolesParents)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetRolesParentsRow
+	for rows.Next() {
+		var i GetRolesParentsRow
+		if err := rows.Scan(&i.ID, &i.Role, &i.Parent); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getUser = `-- name: GetUser :one
@@ -200,7 +322,7 @@ select role from roles join user_roles on roles.id == user_roles.role_id
 
 // ---------------------------------------
 // ---------------------------------------
-func (q *Queries) GetUserRoles(ctx context.Context, userID interface{}) ([]string, error) {
+func (q *Queries) GetUserRoles(ctx context.Context, userID int64) ([]string, error) {
 	rows, err := q.db.QueryContext(ctx, getUserRoles, userID)
 	if err != nil {
 		return nil, err
@@ -240,6 +362,48 @@ func (q *Queries) GetUserWithPassword(ctx context.Context, id int64) (User, erro
 		&i.CreatedAt,
 	)
 	return i, err
+}
+
+const getUsersRoles = `-- name: GetUsersRoles :many
+SELECT u.id, u.name, r.id AS role_id, r.role 
+    FROM users u  
+    JOIN user_roles ur ON u.id = ur.user_id
+    JOIN roles r ON r.id = ur.role_id
+`
+
+type GetUsersRolesRow struct {
+	ID     int64  `db:"id" json:"id"`
+	Name   string `db:"name" json:"name" validate:"required"`
+	RoleID int64  `db:"role_id" json:"role_id"`
+	Role   string `db:"role" json:"role"`
+}
+
+func (q *Queries) GetUsersRoles(ctx context.Context) ([]GetUsersRolesRow, error) {
+	rows, err := q.db.QueryContext(ctx, getUsersRoles)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetUsersRolesRow
+	for rows.Next() {
+		var i GetUsersRolesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.RoleID,
+			&i.Role,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const listPokemons = `-- name: ListPokemons :many

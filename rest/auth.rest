@@ -39,3 +39,7 @@ GET {{baseUrl}}/api/auth/whoami
 
 ### Sign-out (logout)
 {{baseUrl}}/api/auth/signout
+
+### Get RBAC
+{{baseUrl}}/api/auth/get-rbac
+

@@ -8,6 +8,18 @@ import (
 	"time"
 )
 
+type Permission struct {
+	ID          int64   `db:"id" json:"id"`
+	Permission  string  `db:"permission" json:"permission"`
+	Description *string `db:"description" json:"description"`
+	Rule        *string `db:"rule" json:"rule"`
+}
+
+type PermissionChild struct {
+	PermissionID      int64 `db:"permission_id" json:"permission_id"`
+	ChildPermissionID int64 `db:"child_permission_id" json:"child_permission_id"`
+}
+
 type Pokemon struct {
 	ID    int64  `db:"id" json:"id"`
 	Name  string `db:"name" json:"name"`
@@ -18,6 +30,16 @@ type Role struct {
 	ID          int64   `db:"id" json:"id"`
 	Role        string  `db:"role" json:"role"`
 	Description *string `db:"description" json:"description"`
+}
+
+type RoleChild struct {
+	RoleID      int64 `db:"role_id" json:"role_id"`
+	ChildRoleID int64 `db:"child_role_id" json:"child_role_id"`
+}
+
+type RolePermission struct {
+	RoleID       int64 `db:"role_id" json:"role_id"`
+	PermissionID int64 `db:"permission_id" json:"permission_id"`
 }
 
 type User struct {
@@ -31,6 +53,6 @@ type User struct {
 }
 
 type UserRole struct {
-	UserID interface{} `db:"user_id" json:"user_id"`
-	RoleID interface{} `db:"role_id" json:"role_id"`
+	UserID int64 `db:"user_id" json:"user_id"`
+	RoleID int64 `db:"role_id" json:"role_id"`
 }

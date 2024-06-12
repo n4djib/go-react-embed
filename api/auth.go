@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"go-react-embed/models"
 	"net/http"
 	"os"
@@ -19,6 +20,8 @@ func RegisterAuthsHandlers(e *echo.Group) {
 	e.GET("/auth/whoami", whoami)
 	e.PUT("/auth/active-state", updateUserActiveStateHandler)
 	e.GET("/auth/check-name/:name", checkUsername)
+	
+	e.GET("/auth/get-rbac", GetRBAC)
 
 	// TODO forgoten password
 	// TODO change password
@@ -26,6 +29,55 @@ func RegisterAuthsHandlers(e *echo.Group) {
 	// TODO rate limit login tries
 	// TODO limit signup tries
 }
+
+func GetRBAC(c echo.Context) error {
+	roles, err := models.QUERIES.GetRolesParents(models.CTX)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	permissions, err := models.QUERIES.GetPermissionsParents(models.CTX)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	permissionsRoles, err := models.QUERIES.GetPermissionsRoles(models.CTX)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	usersRoles, err := models.QUERIES.GetUsersRoles(models.CTX)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	fmt.Println("-roles: ")
+	for i:=0; i<len(roles); i++ {
+		fmt.Println(" ", roles[i])
+	}
+	fmt.Println("")
+	fmt.Println("-permissions: ")
+	for i:=0; i<len(permissions); i++ {
+		fmt.Println(" ", permissions[i])
+	}
+	fmt.Println("")
+	fmt.Println("-permissionsRoles: ")
+	for i:=0; i<len(permissionsRoles); i++ {
+		fmt.Println(" ", permissionsRoles[i])
+	}
+	fmt.Println("")
+	fmt.Println("-usersRoles: ")
+	for i:=0; i<len(usersRoles); i++ {
+		fmt.Println(" ", usersRoles[i])
+	}
+	fmt.Println("")
+
+	return c.JSON(http.StatusOK, echo.Map{
+		"roles": roles,
+		"permissions": permissions,
+		"permissionsRoles": permissionsRoles,
+		"usersRoles": usersRoles,
+	})
+}
+
+
 
 type ContextUser struct {
 	ID int64
@@ -57,6 +109,8 @@ func CurrentAuthUserMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		if err != nil {
 			return next(ccu)
 		}
+
+		// TODO check session expiration
 
 		// get user roles
 		roles, _ := models.QUERIES.GetUserRoles(models.CTX, user.ID)

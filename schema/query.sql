@@ -64,5 +64,30 @@ SELECT * FROM pokemons ORDER BY id;
 SELECT * FROM pokemons ORDER BY id LIMIT ? OFFSET ?;
 
 -- name: ListPokemonsNames :many
-SELECT name FROM pokemons
+SELECT name FROM pokemons;
 
+-----------------------------------------
+-----------------------------------------
+-- RBAC
+
+-- name: GetRolesParents :many
+SELECT r.id, r.role, rc.role_id AS parent 
+  FROM roles r 
+  LEFT JOIN role_child rc ON r.id = rc.child_role_id;
+
+-- name: GetPermissionsParents :many
+SELECT p.id, p.permission, p.rule, pc.permission_id AS parent
+    FROM permissions p 
+    LEFT JOIN permission_child pc ON p.id = pc.child_permission_id;
+
+-- name: GetPermissionsRoles :many
+SELECT p.id, p.permission, rp.role_id AS role_id, r.role 
+    FROM permissions p
+    JOIN role_permissions rp ON p.id = rp.permission_id
+    JOIN roles r ON rp.role_id = r.id;
+
+-- name: GetUsersRoles :many
+SELECT u.id, u.name, r.id AS role_id, r.role 
+    FROM users u  
+    JOIN user_roles ur ON u.id = ur.user_id
+    JOIN roles r ON r.id = ur.role_id;
