@@ -43,3 +43,8 @@ GET {{baseUrl}}/api/auth/whoami
 ### Get RBAC
 {{baseUrl}}/api/auth/get-rbac
 
+
+
+
+### Ping Pong
+{{baseUrl}}/ping

@@ -138,6 +138,9 @@ go get -u github.com/swaggo/echo-swagger
 - try to serve the pages statically only in production
     embed only in production
 - swagger
+- 404 not found page in react router
+- maybe relative routes in react 
+- 
 - 
 - 
 - 

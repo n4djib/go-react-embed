@@ -23,6 +23,12 @@ func RegisterPokemonsHandlers(e *echo.Group) {
 // @Success 200 {string} string "ok"
 // @Router /api/pokemons [get]
 func getPokemonsHandler(c echo.Context) error {
+	// get current user and roles from context
+
+	// check if user has permission
+	// IsAllowed(user, "permission") bool
+
+	
 	var args models.ListPokemonsOffsetParams
 	limitQuery := c.QueryParam("limit")
 	limit, err := strconv.ParseInt(limitQuery, 10, 32)

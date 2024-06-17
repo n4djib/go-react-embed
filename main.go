@@ -3,8 +3,10 @@ package main
 import (
 	_ "embed"
 	"fmt"
+
 	"go-react-embed/api"
 	"go-react-embed/frontend"
+	"go-react-embed/rbac"
 	"log"
 	"net/http"
 	"os"
@@ -12,6 +14,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+
 	echoSwagger "github.com/swaggo/echo-swagger"
 
 	_ "go-react-embed/docs"
@@ -33,6 +36,13 @@ func main() {
 	// create DB and Tables and initialize Globals
 	initDatabaseModels()
 
+	// rbacAuth, err := setupRBAC()
+	rbacAuth, err := setupRBAC()
+	if err != nil {
+		log.Fatal("+++ Error in Getting RBAC data, ", err)
+	}
+	RBAC = rbacAuth
+
 	// create echo app
 	e := echo.New()
 	e.Use(api.CurrentAuthUserMiddleware)
@@ -48,6 +58,7 @@ func main() {
 
 	// registering bachend routes routes
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
+	// e.GET("/ping", pong, api.AuthenticatedMiddleware)
 	e.GET("/ping", pong)
 	api.RegisterPokemonsHandlers(e.Group("/api", api.AuthenticatedMiddleware))
 	api.RegisterUsersHandlers(e.Group("/api"))
@@ -88,10 +99,10 @@ func loggingMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-func bodyDump(c echo.Context, reqBody, resBody []byte) {
-	fmt.Println("reqBody::", string(reqBody))
-	fmt.Println("resBody::", string(resBody))
-}
+// func bodyDump(c echo.Context, reqBody, resBody []byte) {
+// 	fmt.Println("reqBody::", string(reqBody))
+// 	fmt.Println("resBody::", string(resBody))
+// }
 
 func useCORSMiddleware(e *echo.Echo) {
 	allowOrigins := []string{os.Getenv("APP_URL") + ":" + os.Getenv("APP_PORT")}
@@ -109,10 +120,33 @@ func useCORSMiddleware(e *echo.Echo) {
 	e.Use(middleware.CORSWithConfig(corsConfig))
 }
 
-func pong(ctx echo.Context) error {
+func pong(c echo.Context) error {
+	// testing authorization
+
+	// ucc := c.(*api.CustomContextUser)
+	// fmt.Println("-ucc:", ucc)
+	
+	user := rbac.Map{
+		"id": 5, "name": "nadjib", "age": 4, 
+		"roles": []string{
+			// "ADMIN", 
+			"USER", 
+		},
+	}
+
+	ressource := rbac.Map{"id": 5, "title": "tutorial", "owner": 5, "list": []int{1, 2, 3, 4, 5, 6}}
+
+	start5 := time.Now()
+	allowed, err := RBAC.IsAllowed(user, ressource, "edit_own_user")
+	if err != nil {
+		log.Fatal("++++ error: ", err.Error())
+	}
+	fmt.Println("-allowed:", allowed)
+	fmt.Println("-duration5:", time.Since(start5))
+
 	// Defining data
 	data := map[string]string{
 		"message": "Pong!",
 	}
-	return ctx.JSON(http.StatusOK, data)
+	return c.JSON(http.StatusOK, data)
 }

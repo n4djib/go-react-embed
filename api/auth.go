@@ -31,19 +31,25 @@ func RegisterAuthsHandlers(e *echo.Group) {
 }
 
 func GetRBAC(c echo.Context) error {
-	roles, err := models.QUERIES.GetRolesParents(models.CTX)
+	roles, err := models.QUERIES.GetRoles(models.CTX)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
-	permissions, err := models.QUERIES.GetPermissionsParents(models.CTX)
+	permissions, err := models.QUERIES.GetPermissions(models.CTX)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
-	permissionsRoles, err := models.QUERIES.GetPermissionsRoles(models.CTX)
+
+	roleParents, err := models.QUERIES.GetRoleParents(models.CTX)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
-	usersRoles, err := models.QUERIES.GetUsersRoles(models.CTX)
+	permissionParents, err := models.QUERIES.GetPermissionParents(models.CTX)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	rolePermissions, err := models.QUERIES.GetRolePermissions(models.CTX)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
@@ -58,22 +64,30 @@ func GetRBAC(c echo.Context) error {
 		fmt.Println(" ", permissions[i])
 	}
 	fmt.Println("")
-	fmt.Println("-permissionsRoles: ")
-	for i:=0; i<len(permissionsRoles); i++ {
-		fmt.Println(" ", permissionsRoles[i])
+	
+	fmt.Println("-roleParents: ")
+	for i:=0; i<len(roleParents); i++ {
+		fmt.Println(" ", roleParents[i])
 	}
 	fmt.Println("")
-	fmt.Println("-usersRoles: ")
-	for i:=0; i<len(usersRoles); i++ {
-		fmt.Println(" ", usersRoles[i])
+	fmt.Println("-permissionParents: ")
+	for i:=0; i<len(permissionParents); i++ {
+		fmt.Println(" ", permissionParents[i])
+	}
+	fmt.Println("")
+
+	fmt.Println("-rolePermissions: ")
+	for i:=0; i<len(rolePermissions); i++ {
+		fmt.Println(" ", rolePermissions[i])
 	}
 	fmt.Println("")
 
 	return c.JSON(http.StatusOK, echo.Map{
 		"roles": roles,
 		"permissions": permissions,
-		"permissionsRoles": permissionsRoles,
-		"usersRoles": usersRoles,
+		"roleParents": roleParents,
+		"permissionParents": permissionParents,
+		"rolePermissions": rolePermissions,
 	})
 }
 
@@ -92,6 +106,11 @@ type CustomContextUser struct {
 	user ContextUser
 }
 
+func getCurrentUserFromContext(c echo.Context) *CustomContextUser {
+	return c.(*CustomContextUser)
+}
+
+// TODO rename to WhoamiMiddleware
 // middleware extends the context by adding the authenticated user
 func CurrentAuthUserMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
@@ -135,7 +154,7 @@ func CurrentAuthUserMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 // AuthenticatedMiddleware checks if token is valid
 func AuthenticatedMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ccu := c.(*CustomContextUser)
+		ccu := getCurrentUserFromContext(c)
 
 		// check if authenticated
 		if ccu.user.ID == 0 {
