@@ -45,7 +45,7 @@ func main() {
 
 	// create echo app
 	e := echo.New()
-	e.Use(api.CurrentAuthUserMiddleware)
+	e.Use(api.WhoamiMiddleware)
 	// middlewares
 	e.Use(loggingMiddleware)
 	e.Pre(middleware.RemoveTrailingSlash())

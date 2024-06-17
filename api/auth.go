@@ -110,9 +110,8 @@ func getCurrentUserFromContext(c echo.Context) *CustomContextUser {
 	return c.(*CustomContextUser)
 }
 
-// TODO rename to WhoamiMiddleware
 // middleware extends the context by adding the authenticated user
-func CurrentAuthUserMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+func WhoamiMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ccu := &CustomContextUser{
 			c, 
