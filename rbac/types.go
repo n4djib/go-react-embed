@@ -5,9 +5,9 @@ type Role struct {
 	Role string `db:"role" json:"role"`
 }
 type Permission struct {
-	ID         int64       `db:"id" json:"id"`
-	Permission string      `db:"permission" json:"permission"`
-	Rule       interface{} `db:"rule" json:"rule"`
+	ID         int64  `db:"id" json:"id"`
+	Permission string `db:"permission" json:"permission"`
+	Rule       string `db:"rule" json:"rule"`
 }
 type RoleParent struct {
 	RoleID   int64 `db:"role_id" json:"role_id"`
@@ -20,11 +20,6 @@ type PermissionParent struct {
 type RolePermission struct {
 	RoleID       int64 `db:"role_id" json:"role_id"`
 	PermissionID int64 `db:"permission_id" json:"permission_id"`
-}
-type UserRole struct {
-	ID     int64  `db:"id" json:"id"`
-	Name   string `db:"name" json:"name" validate:"required"`
-	RoleID int64  `db:"role_id" json:"role_id"`
 }
 
 type Map = map[string]any

@@ -8,6 +8,7 @@ export const Route = createFileRoute("/")({
 });
 
 const baseUrl = import.meta.env.VITE_BACKEND_URL;
+const CREDENTIALS = import.meta.env.VITE_CREDENTIALS;
 
 function Index() {
   const [data, setData] = useState<string>("");
@@ -15,7 +16,9 @@ function Index() {
   const { user } = useAuth();
 
   const fetchData = async () => {
-    const response = await fetch(baseUrl + "/ping");
+    const response = await fetch(baseUrl + "/ping", {
+      credentials: CREDENTIALS,
+    });
     const data = await response.text();
     setData(data);
   };

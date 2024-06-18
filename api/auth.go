@@ -91,8 +91,6 @@ func GetRBAC(c echo.Context) error {
 	})
 }
 
-
-
 type ContextUser struct {
 	ID int64
 	Name string
@@ -103,20 +101,13 @@ type ContextUser struct {
 
 type CustomContextUser struct {
 	echo.Context
-	user ContextUser
-}
-
-func getCurrentUserFromContext(c echo.Context) *CustomContextUser {
-	return c.(*CustomContextUser)
+	User ContextUser
 }
 
 // middleware extends the context by adding the authenticated user
 func WhoamiMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ccu := &CustomContextUser{
-			c, 
-			ContextUser{},
-		}
+		ccu := &CustomContextUser{c, ContextUser{}}
 
 		cookie, err := c.Cookie("Authorization")
 		if err != nil {
@@ -144,8 +135,7 @@ func WhoamiMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 			roles,
 		}
 		
-		ccu.user = *cu
-
+		ccu.User = *cu
 		return next(ccu)
 	}
 }
@@ -153,10 +143,10 @@ func WhoamiMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 // AuthenticatedMiddleware checks if token is valid
 func AuthenticatedMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ccu := getCurrentUserFromContext(c)
+		ccu := c.(*CustomContextUser)
 
 		// check if authenticated
-		if ccu.user.ID == 0 {
+		if ccu.User.ID == 0 {
 		    return echo.NewHTTPError(http.StatusUnauthorized, "Not Authenticated")
 		}
 

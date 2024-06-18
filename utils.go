@@ -42,6 +42,7 @@ DATABASE="./go-react-embed.db"
 SERVER_CRT="server.crt"
 SERVER_KEY="server.key"
 COOKIE_EXP_MINUTES=1440    # 24h
+HIDE_BANNER=false
 `
 
 	fmt.Println("creating ", out)
@@ -69,7 +70,6 @@ func initDatabaseModels() {
 }
 
 func openBrowser() error {
-	url := os.Getenv("APP_URL") + ":" + os.Getenv("APP_PORT")
 	// grab flag
 	air_flag := flag.Bool("air", false, "detect if run by AIR")
 	flag.Parse()
@@ -77,6 +77,7 @@ func openBrowser() error {
 
 	// open app url
 	if !air {
+		url := os.Getenv("APP_URL") + ":" + os.Getenv("APP_PORT")
 		if err := openURL(url); err != nil {
 			return err
 		}

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"go-react-embed/models"
 	"net/http"
 	"strconv"
@@ -17,6 +18,15 @@ func RegisterUsersHandlers(e *echo.Group) {
 }
 
 func getUsersHandler(c echo.Context) error {
+	ccu := c.(*CustomContextUser)
+	fmt.Println("-ccu:", ccu)
+	fmt.Println("-user:", ccu.User)
+	
+	if ccu.User.ID == 0 {
+		return echo.NewHTTPError(http.StatusUnauthorized, "Not Authenticated")
+	}
+
+
 	users, err := models.QUERIES.ListUsers(models.CTX)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())

@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"go-react-embed/models"
 	"go-react-embed/rbac"
 )
@@ -80,12 +79,12 @@ func setupRBAC() (rbac.RBAC, error) {
 	// 	}
 	// 	return false;
 	//   }
-	//   function rule(user, ressource) {
+	//   function rule(user, resource) {
 	// 	console.log("set at main");
 	// 	return %s;
 	//   }`)
 
-	fmt.Println("-rbacAuth:", rbacAuth)
+	// fmt.Println("-rbacAuth:", rbacAuth)
 
 	return rbacAuth, nil
 }

@@ -20,13 +20,15 @@ import (
 	_ "go-react-embed/docs"
 )
 
-// TODO add swag init to build
+// TODO add swagger init to build
 
 // @title GO-REACT-EMBED API
 // @version 1.0
 // @description this is the API for the backend.
 // @termsOfService http://swagger.io/terms/
 func main() {
+	start := time.Now()
+
 	// load .env file
 	err := initAndLoadEnv()
 	if err != nil {
@@ -34,57 +36,71 @@ func main() {
 	}
 
 	// create DB and Tables and initialize Globals
-	initDatabaseModels()
+	go initDatabaseModels()
 
-	// rbacAuth, err := setupRBAC()
-	rbacAuth, err := setupRBAC()
-	if err != nil {
-		log.Fatal("+++ Error in Getting RBAC data, ", err)
-	}
-	RBAC = rbacAuth
+	// setting up RBAC
+	go func () {
+		rbacAuth, err := setupRBAC()
+		if err != nil {
+			log.Fatal("+++ Error in Getting RBAC data, ", err)
+		}
+		// put into gloabal variable
+		RBAC = rbacAuth
+	}()
 
 	// create echo app
 	e := echo.New()
-	e.Use(api.WhoamiMiddleware)
+
 	// middlewares
+	e.Use(api.WhoamiMiddleware)
 	e.Use(loggingMiddleware)
 	e.Pre(middleware.RemoveTrailingSlash())
 	// CORS
 	useCORSMiddleware(e)
-	// TODO show it in DEV & SHOW(env)
+	// show it in DEV & SHOW(env)
 	// if os.Getenv("MODE") == "DEV" {
 	// 	e.Use(middleware.BodyDump(bodyDump))
 	// }
 
 	// registering bachend routes routes
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
-	// e.GET("/ping", pong, api.AuthenticatedMiddleware)
 	e.GET("/ping", pong)
+	api.RegisterAuthsHandlers(e.Group("/api"))
 	api.RegisterPokemonsHandlers(e.Group("/api", api.AuthenticatedMiddleware))
 	api.RegisterUsersHandlers(e.Group("/api"))
-	api.RegisterAuthsHandlers(e.Group("/api"))
 
 	// register react static pages build from react tanstack router
-	frontend.RegisterHandlers(e)
+	go frontend.RegisterHandlers(e)
 
 	// open browser to APP url https://localhost:8080
-	err = openBrowser()
-	if err != nil {
-		log.Fatal("Problem Opening the browser\n", err)
-	}
+	go func () {
+		err := openBrowser()
+		if err != nil {
+			log.Fatal("Problem Opening the browser\n", err)
+		}
+	}()
 
 	// check if file "server.crt", "server.key" exist
 	SERVER_CRT := os.Getenv("SERVER_CRT")
 	SERVER_KEY := os.Getenv("SERVER_KEY")
-	err = checkSSLFilesExist(SERVER_CRT, SERVER_KEY)
-	if err != nil {
-		log.Fatal("SSL files not found\n", err)
-	}
+	APP_PORT := os.Getenv("APP_PORT")
+	go func () {
+		err := checkSSLFilesExist(SERVER_CRT, SERVER_KEY)
+		if err != nil {
+			log.Fatal("SSL files not found\n", err)
+		}
+	}()
 
+	// hide the banner
+	if os.Getenv("HIDE_BANNER") == "true" {
+		e.HideBanner = true
+	}
+	// execution duration
+	fmt.Println("- duration:", time.Since(start))
+	
 	// FIXME echo: http: TLS handshake error from [::1]:49955:
-	// TODO hide the banner
 	// start server
-	e.Logger.Fatal(e.StartTLS(":"+os.Getenv("APP_PORT"), SERVER_CRT, SERVER_KEY))
+	e.Logger.Fatal(e.StartTLS(":"+APP_PORT, SERVER_CRT, SERVER_KEY))
 }
 
 // Custom logging middleware
@@ -123,26 +139,30 @@ func useCORSMiddleware(e *echo.Echo) {
 func pong(c echo.Context) error {
 	// testing authorization
 
-	// ucc := c.(*api.CustomContextUser)
-	// fmt.Println("-ucc:", ucc)
+	ccu := c.(*api.CustomContextUser)
+	
+	if ccu.User.ID == 0 {
+		return echo.NewHTTPError(http.StatusUnauthorized, "Not Authenticated")
+	}
 	
 	user := rbac.Map{
-		"id": 5, "name": "nadjib", "age": 4, 
-		"roles": []string{
-			// "ADMIN", 
-			"USER", 
-		},
+		"id": ccu.User.ID, "name": ccu.User.Name, 
+		"roles": ccu.User.Roles,
 	}
 
-	ressource := rbac.Map{"id": 5, "title": "tutorial", "owner": 5, "list": []int{1, 2, 3, 4, 5, 6}}
+	resource := rbac.Map{"id": 3, "title": "tutorial", "owner": 3, "list": []int{1, 2, 3, 4, 5, 6}}
 
-	start5 := time.Now()
-	allowed, err := RBAC.IsAllowed(user, ressource, "edit_own_user")
+	// start5 := time.Now()
+	allowed, err := RBAC.IsAllowed(user, resource, "edit_user")
 	if err != nil {
 		log.Fatal("++++ error: ", err.Error())
 	}
-	fmt.Println("-allowed:", allowed)
-	fmt.Println("-duration5:", time.Since(start5))
+	// fmt.Println("-allowed to ping:", allowed)
+	// fmt.Println("-duration5:", time.Since(start5))
+
+	if !allowed {
+		return echo.NewHTTPError(http.StatusUnauthorized, "Not Authorized")
+	}
 
 	// Defining data
 	data := map[string]string{
