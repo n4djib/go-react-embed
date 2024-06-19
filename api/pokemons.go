@@ -44,7 +44,7 @@ func getPokemonsHandler(c echo.Context) error {
 	args.Limit = limit
 	args.Offset = offset
 
-	allPokemonsNames, err := models.QUERIES.ListPokemonsNames(models.CTX)
+	pokemonsCount, err := models.QUERIES.GetPokemonsCount(models.CTX)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
@@ -53,7 +53,7 @@ func getPokemonsHandler(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 	return c.JSON(http.StatusOK, echo.Map{
-		"count": len(allPokemonsNames),
+		"count": pokemonsCount,
 		"limit": int(limit),
 		"offset": int(offset),
 		"result": pokemons,
@@ -61,7 +61,7 @@ func getPokemonsHandler(c echo.Context) error {
 }
 
 
-
+// TODO i should remove this
 type PokemonResult struct {
 	Result models.Pokemon `json:"result"`
 }

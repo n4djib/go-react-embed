@@ -154,9 +154,34 @@ func (q *Queries) GetPokemonWithPassword(ctx context.Context, id int64) (Pokemon
 	return i, err
 }
 
+const getPokemonsCount = `-- name: GetPokemonsCount :many
+SELECT count(*) FROM pokemons ORDER BY id
+`
+
+func (q *Queries) GetPokemonsCount(ctx context.Context) ([]int64, error) {
+	rows, err := q.db.QueryContext(ctx, getPokemonsCount)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int64
+	for rows.Next() {
+		var count int64
+		if err := rows.Scan(&count); err != nil {
+			return nil, err
+		}
+		items = append(items, count)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getRoleParents = `-- name: GetRoleParents :many
-
-
 SELECT child_role_id AS role_id, role_id AS parent_id FROM role_child
 `
 
@@ -165,15 +190,6 @@ type GetRoleParentsRow struct {
 	ParentID int64 `db:"parent_id" json:"parent_id"`
 }
 
-// -- name: GetRoleParents :many
-// SELECT r.id, r.role, rc.role_id AS parent_id FROM roles r
-//
-//	JOIN role_child rc ON r.id = rc.child_role_id;
-//
-// -- name: GetPermissionParents :many
-// SELECT p.id, p.permission, pc.permission_id AS parent_id FROM permissions p
-//
-//	JOIN permission_child pc ON p.id = pc.child_permission_id;
 func (q *Queries) GetRoleParents(ctx context.Context) ([]GetRoleParentsRow, error) {
 	rows, err := q.db.QueryContext(ctx, getRoleParents)
 	if err != nil {
