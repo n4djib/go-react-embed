@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Button } from "@material-tailwind/react";
 import { useAuth } from "../contexts/auth-context";
+import { Button } from "@material-tailwind/react";
 
 export const Route = createFileRoute("/")({
   component: () => <Index />,

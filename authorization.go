@@ -6,11 +6,9 @@ import (
 	"go-react-embed/rbac"
 )
 
-
 var (
 	RBAC rbac.RBAC
 )
-
 
 func getRbacData() (
 	[]models.GetRolesRow, 
@@ -83,8 +81,6 @@ func setupRBAC() (rbac.RBAC, error) {
 	// 	console.log("set at main");
 	// 	return %s;
 	//   }`)
-
-	// fmt.Println("-rbacAuth:", rbacAuth)
 
 	return rbacAuth, nil
 }

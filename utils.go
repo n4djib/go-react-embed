@@ -26,7 +26,7 @@ func initAndLoadEnv() error {
 	if errors.Is(err, os.ErrNotExist) {
 		err := createENV(".env.local")
 		if err != nil {
-			return err
+			log.Fatal("Problem Loading .env\n", err)
 		}
 	}
 
@@ -69,7 +69,7 @@ func initDatabaseModels() {
 	models.DB, models.CTX, models.QUERIES = db, ctx, queries
 }
 
-func openBrowser() error {
+func openBrowser() {
 	// grab flag
 	air_flag := flag.Bool("air", false, "detect if run by AIR")
 	flag.Parse()
@@ -79,10 +79,9 @@ func openBrowser() error {
 	if !air {
 		url := os.Getenv("APP_URL") + ":" + os.Getenv("APP_PORT")
 		if err := openURL(url); err != nil {
-			return err
+			log.Fatal("Problem Opening the browser\n", err)
 		}
 	}
-	return nil
 }
 
 func openURL(url string) error {
@@ -100,22 +99,27 @@ func openURL(url string) error {
 	return cmd.Start()
 }
 
-func checkSSLFilesExist(SERVER_CRT string, SERVER_KEY string) error {
+func checkSSLFilesExist(SERVER_CRT string, SERVER_KEY string) {
 	if _, err := os.Stat(SERVER_CRT); errors.Is(err, os.ErrNotExist) {
+		if err != nil {
+			log.Fatal("SERVER_CRT file not found\n", err)
+		}
 		fmt.Println("file ", SERVER_CRT, "not found")
 		err := createServerCRT(SERVER_CRT)
 		if err != nil {
-			return err
+			log.Fatal("can't create create ServerCRT files\n", err)
 		}
 	}
 	if _, err := os.Stat(SERVER_KEY); errors.Is(err, os.ErrNotExist) {
+		if err != nil {
+			log.Fatal("SERVER_KEY file not found\n", err)
+		}
 		fmt.Println("file ", SERVER_CRT, "not found")
 		err := createServerKEY(SERVER_KEY)
 		if err != nil {
-			return err
+			log.Fatal("can't create create ServerCRT files\n", err)
 		}
 	}
-	return nil
 }
 
 func createServerCRT(out string) error {

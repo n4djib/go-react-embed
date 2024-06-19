@@ -14,6 +14,11 @@ import { Button, Input } from "@material-tailwind/react";
 //     default: module.Button,
 //   }))
 // );
+// const Input = lazy(() =>
+//   import("@material-tailwind/react").then((module) => ({
+//     default: module.Input,
+//   }))
+// );
 
 export const Route = createFileRoute("/auth/signin")({
   component: SignIn,

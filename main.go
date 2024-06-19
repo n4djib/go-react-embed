@@ -15,9 +15,9 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 
-	echoSwagger "github.com/swaggo/echo-swagger"
-
 	_ "go-react-embed/docs"
+
+	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
 // TODO add swagger init to build
@@ -30,10 +30,7 @@ func main() {
 	start := time.Now()
 
 	// load .env file
-	err := initAndLoadEnv()
-	if err != nil {
-		log.Fatal("Problem Loading .env\n", err)
-	}
+	initAndLoadEnv()
 
 	// create DB and Tables and initialize Globals
 	go initDatabaseModels()
@@ -50,46 +47,19 @@ func main() {
 
 	// create echo app
 	e := echo.New()
-
-	// middlewares
-	e.Use(api.WhoamiMiddleware)
-	e.Use(loggingMiddleware)
-	e.Pre(middleware.RemoveTrailingSlash())
-	// CORS
-	useCORSMiddleware(e)
-	// show it in DEV & SHOW(env)
-	// if os.Getenv("MODE") == "DEV" {
-	// 	e.Use(middleware.BodyDump(bodyDump))
-	// }
-
-	// registering bachend routes routes
-	e.GET("/swagger/*", echoSwagger.WrapHandler)
-	e.GET("/ping", pong)
-	api.RegisterAuthsHandlers(e.Group("/api"))
-	api.RegisterPokemonsHandlers(e.Group("/api", api.AuthenticatedMiddleware))
-	api.RegisterUsersHandlers(e.Group("/api"))
-
+	// adding middlewares
+	go addingMiddlewares(e)
+	// registering api backend routes
+	go registeringApiRoutes(e)
 	// register react static pages build from react tanstack router
 	go frontend.RegisterHandlers(e)
 
 	// open browser to APP url https://localhost:8080
-	go func () {
-		err := openBrowser()
-		if err != nil {
-			log.Fatal("Problem Opening the browser\n", err)
-		}
-	}()
+	go openBrowser()
 
 	// check if file "server.crt", "server.key" exist
-	SERVER_CRT := os.Getenv("SERVER_CRT")
-	SERVER_KEY := os.Getenv("SERVER_KEY")
-	APP_PORT := os.Getenv("APP_PORT")
-	go func () {
-		err := checkSSLFilesExist(SERVER_CRT, SERVER_KEY)
-		if err != nil {
-			log.Fatal("SSL files not found\n", err)
-		}
-	}()
+	SERVER_CRT, SERVER_KEY := os.Getenv("SERVER_CRT"), os.Getenv("SERVER_KEY")
+	go checkSSLFilesExist(SERVER_CRT, SERVER_KEY)
 
 	// hide the banner
 	if os.Getenv("HIDE_BANNER") == "true" {
@@ -100,7 +70,28 @@ func main() {
 	
 	// FIXME echo: http: TLS handshake error from [::1]:49955:
 	// start server
+	APP_PORT := os.Getenv("APP_PORT")
 	e.Logger.Fatal(e.StartTLS(":"+APP_PORT, SERVER_CRT, SERVER_KEY))
+}
+
+func addingMiddlewares(e *echo.Echo) {
+	e.Use(api.WhoamiMiddleware)
+	e.Use(loggingMiddleware)
+	e.Pre(middleware.RemoveTrailingSlash())
+	// CORS
+	useCORSMiddleware(e)
+	// show it in DEV & SHOW(env)
+	// if os.Getenv("MODE") == "DEV" {
+	// 	e.Use(middleware.BodyDump(bodyDump))
+	// }
+}
+
+func registeringApiRoutes(e *echo.Echo) {
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
+	e.GET("/ping", pong)
+	api.RegisterAuthsHandlers(e.Group("/api"))
+	api.RegisterPokemonsHandlers(e.Group("/api", api.AuthenticatedMiddleware))
+	api.RegisterUsersHandlers(e.Group("/api"))
 }
 
 // Custom logging middleware
@@ -138,9 +129,7 @@ func useCORSMiddleware(e *echo.Echo) {
 
 func pong(c echo.Context) error {
 	// testing authorization
-
 	ccu := c.(*api.CustomContextUser)
-	
 	if ccu.User.ID == 0 {
 		return echo.NewHTTPError(http.StatusUnauthorized, "Not Authenticated")
 	}
@@ -149,16 +138,15 @@ func pong(c echo.Context) error {
 		"id": ccu.User.ID, "name": ccu.User.Name, 
 		"roles": ccu.User.Roles,
 	}
-
 	resource := rbac.Map{"id": 3, "title": "tutorial", "owner": 3, "list": []int{1, 2, 3, 4, 5, 6}}
 
-	// start5 := time.Now()
+	start5 := time.Now()
 	allowed, err := RBAC.IsAllowed(user, resource, "edit_user")
 	if err != nil {
 		log.Fatal("++++ error: ", err.Error())
 	}
-	// fmt.Println("-allowed to ping:", allowed)
-	// fmt.Println("-duration5:", time.Since(start5))
+	fmt.Println("-allowed to ping:", allowed)
+	fmt.Println("-duration5:", time.Since(start5))
 
 	if !allowed {
 		return echo.NewHTTPError(http.StatusUnauthorized, "Not Authorized")

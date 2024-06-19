@@ -5,6 +5,8 @@ import {
   Pokemon,
 } from "../../lib/tanstack-query/pokemons";
 import { useEffect, useState } from "react";
+import { capitalizeFirstLetter } from "../../lib/utils";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import {
   List,
   ListItem,
@@ -16,8 +18,6 @@ import {
   Button,
   Spinner,
 } from "@material-tailwind/react";
-import { capitalizeFirstLetter } from "../../lib/utils";
-import { ArrowLeft, ArrowRight } from "lucide-react";
 
 type PaginationParams = {
   limit: number;

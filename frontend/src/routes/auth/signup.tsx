@@ -1,5 +1,4 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, Input } from "@material-tailwind/react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Eye, EyeOff, User } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -7,6 +6,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
 import { useInsertUser } from "../../lib/tanstack-query/users";
 import ErrorMessage from "../../components/ErrorMessage";
+import { Button, Input } from "@material-tailwind/react";
 
 export const Route = createFileRoute("/auth/signup")({
   component: () => <SignUp />,
