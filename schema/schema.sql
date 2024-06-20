@@ -71,14 +71,14 @@ CREATE TABLE IF NOT EXISTS role_permissions (
     PRIMARY KEY (role_id, permission_id)
 );
 
-CREATE TABLE IF NOT EXISTS permission_child (
-    permission_id       INTEGER REFERENCES permissions (id) NOT NULL,
-    child_permission_id INTEGER REFERENCES permissions (id) NOT NULL,
-    PRIMARY KEY (permission_id, child_permission_id)
+CREATE TABLE IF NOT EXISTS permission_parent (
+    permission_id        INTEGER REFERENCES permissions (id) NOT NULL,
+    parent_id INTEGER REFERENCES permissions (id) NOT NULL,
+    PRIMARY KEY (permission_id, parent_id)
 );
 
-CREATE TABLE IF NOT EXISTS role_child (
-    role_id       INTEGER REFERENCES roles (id) NOT NULL,
-    child_role_id INTEGER REFERENCES roles (id) NOT NULL,
-    PRIMARY KEY (role_id, child_role_id)
+CREATE TABLE IF NOT EXISTS role_parent (
+    role_id        INTEGER REFERENCES roles (id) NOT NULL,
+    parent_id INTEGER REFERENCES roles (id) NOT NULL,
+    PRIMARY KEY (role_id, parent_id)
 );

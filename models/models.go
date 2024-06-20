@@ -15,9 +15,9 @@ type Permission struct {
 	Rule        *string `db:"rule" json:"rule"`
 }
 
-type PermissionChild struct {
-	PermissionID      int64 `db:"permission_id" json:"permission_id"`
-	ChildPermissionID int64 `db:"child_permission_id" json:"child_permission_id"`
+type PermissionParent struct {
+	PermissionID int64 `db:"permission_id" json:"permission_id"`
+	ParentID     int64 `db:"parent_id" json:"parent_id"`
 }
 
 type Pokemon struct {
@@ -32,9 +32,9 @@ type Role struct {
 	Description *string `db:"description" json:"description"`
 }
 
-type RoleChild struct {
-	RoleID      int64 `db:"role_id" json:"role_id"`
-	ChildRoleID int64 `db:"child_role_id" json:"child_role_id"`
+type RoleParent struct {
+	RoleID   int64 `db:"role_id" json:"role_id"`
+	ParentID int64 `db:"parent_id" json:"parent_id"`
 }
 
 type RolePermission struct {

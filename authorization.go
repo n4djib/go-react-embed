@@ -13,8 +13,8 @@ var (
 func getRbacData() (
 	[]models.GetRolesRow, 
 	[]models.GetPermissionsRow,
-	[]models.GetRoleParentsRow,
-	[]models.GetPermissionParentsRow,
+	[]models.RoleParent,
+	[]models.PermissionParent,
 	[]models.RolePermission,
 	error,
 ) {
@@ -44,7 +44,12 @@ func getRbacData() (
 func setupRBAC() (rbac.RBAC, error) {
 	rbacAuth := rbac.New()
 
-	roles, permissions, roleParents, permissionParents, rolePermissions, err := getRbacData()
+	roles, 
+	permissions, 
+	roleParents, 
+	permissionParents, 
+	rolePermissions, 
+	err := getRbacData()
 	if err != nil {
 		return nil, err
 	}
@@ -55,12 +60,14 @@ func setupRBAC() (rbac.RBAC, error) {
 	recastedPermissionParent := &[]rbac.PermissionParent{}
 	recastedRolePermission := &[]rbac.RolePermission{}
 
+	// recasting type from 
 	recast(roles, recastedRoles)
 	recast(permissions, recastedPermission)
 	recast(roleParents, recastedRoleParent)
 	recast(permissionParents, recastedPermissionParent)
 	recast(rolePermissions, recastedRolePermission)
 
+	// setting RBAC authorization
 	rbacAuth.SetRoles(*recastedRoles)
 	rbacAuth.SetPermissions(*recastedPermission)
 	rbacAuth.SetRoleParents(*recastedRoleParent)

@@ -54,23 +54,18 @@ func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
 }
 
 const getPermissionParents = `-- name: GetPermissionParents :many
-SELECT child_permission_id as permission_id, permission_id AS parent_id FROM permission_child
+SELECT permission_id, parent_id FROM permission_parent
 `
 
-type GetPermissionParentsRow struct {
-	PermissionID int64 `db:"permission_id" json:"permission_id"`
-	ParentID     int64 `db:"parent_id" json:"parent_id"`
-}
-
-func (q *Queries) GetPermissionParents(ctx context.Context) ([]GetPermissionParentsRow, error) {
+func (q *Queries) GetPermissionParents(ctx context.Context) ([]PermissionParent, error) {
 	rows, err := q.db.QueryContext(ctx, getPermissionParents)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetPermissionParentsRow
+	var items []PermissionParent
 	for rows.Next() {
-		var i GetPermissionParentsRow
+		var i PermissionParent
 		if err := rows.Scan(&i.PermissionID, &i.ParentID); err != nil {
 			return nil, err
 		}
@@ -182,23 +177,18 @@ func (q *Queries) GetPokemonsCount(ctx context.Context) ([]int64, error) {
 }
 
 const getRoleParents = `-- name: GetRoleParents :many
-SELECT child_role_id AS role_id, role_id AS parent_id FROM role_child
+SELECT role_id, parent_id FROM role_parent
 `
 
-type GetRoleParentsRow struct {
-	RoleID   int64 `db:"role_id" json:"role_id"`
-	ParentID int64 `db:"parent_id" json:"parent_id"`
-}
-
-func (q *Queries) GetRoleParents(ctx context.Context) ([]GetRoleParentsRow, error) {
+func (q *Queries) GetRoleParents(ctx context.Context) ([]RoleParent, error) {
 	rows, err := q.db.QueryContext(ctx, getRoleParents)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetRoleParentsRow
+	var items []RoleParent
 	for rows.Next() {
-		var i GetRoleParentsRow
+		var i RoleParent
 		if err := rows.Scan(&i.RoleID, &i.ParentID); err != nil {
 			return nil, err
 		}

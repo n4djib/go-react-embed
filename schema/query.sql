@@ -80,10 +80,10 @@ SELECT id, role FROM roles;
 SELECT id, permission, IFNULL(rule,"") AS rule FROM permissions;
 
 -- name: GetRoleParents :many
-SELECT child_role_id AS role_id, role_id AS parent_id FROM role_child;
+SELECT role_id, parent_id FROM role_parent;
 
 -- name: GetPermissionParents :many
-SELECT child_permission_id as permission_id, permission_id AS parent_id FROM permission_child;
+SELECT permission_id, parent_id FROM permission_parent;
 
 -- name: GetRolePermissions :many
 SELECT role_id, permission_id FROM role_permissions;
