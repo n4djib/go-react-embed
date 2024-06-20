@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import { ContextUserType } from "../../contexts/auth-context";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const CREDENTIALS = import.meta.env.VITE_CREDENTIALS;
@@ -8,10 +9,6 @@ export type User = {
   id: number;
   name: string;
   password: string;
-};
-
-export type UserWithRoles = User & {
-  roles: string[];
 };
 
 type UserResult = {
@@ -94,9 +91,7 @@ export const useUserWhoami = () => {
         }
         if (!response.ok) throw new Error(data.message);
 
-        // return data.user as User;
-        const user: UserWithRoles = data.user;
-        user.roles = data.roles;
+        const user: ContextUserType = data.user;
         return user;
       } catch (error) {
         throw error;

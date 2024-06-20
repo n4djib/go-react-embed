@@ -68,7 +68,6 @@ func main() {
 	// execution duration
 	fmt.Println("- duration:", time.Since(start))
 	
-	// FIXME echo: http: TLS handshake error from [::1]:49955:
 	// start server
 	APP_PORT := os.Getenv("APP_PORT")
 	e.Logger.Fatal(e.StartTLS(":"+APP_PORT, SERVER_CRT, SERVER_KEY))

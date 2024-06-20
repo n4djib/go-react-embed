@@ -5,7 +5,7 @@ import { useUserWhoami } from "../lib/tanstack-query/users";
 export type ContextUserType = {
   id: number;
   name: string;
-  roles: string[] | null;
+  roles: string[];
 };
 
 type loginData = {

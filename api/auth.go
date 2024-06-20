@@ -92,11 +92,11 @@ func GetRBAC(c echo.Context) error {
 }
 
 type ContextUser struct {
-	ID int64
-	Name string
-	IsActive *bool
-	LoggedAt *time.Time
-	Roles []string
+	ID int64            `json:"id"`
+	Name string         `json:"name"`
+	IsActive *bool      `json:"is_active"`
+	LoggedAt *time.Time `json:"logged_at"`
+	Roles []string      `json:"roles"`
 }
 
 type CustomContextUser struct {
@@ -296,23 +296,12 @@ func signin(c echo.Context) error {
 }
 
 func whoami(c echo.Context) error {
-	// TODO get it from context not cookie
-	// don't forget to check the session expiration
-	cookie, err := c.Cookie("Authorization")
-	if err != nil {
-		return c.JSON(http.StatusOK, echo.Map{
-			"message": "Authorization Cookie not found",
-			"user": nil,
-		})
+	ccu := c.(*CustomContextUser)
+	if ccu.User.ID == 0 {
+		return echo.NewHTTPError(http.StatusUnauthorized, "Not Authenticated")
 	}
-	session_uuid := cookie.Value  // uuid
-	user, err := models.QUERIES.GetUserBySession(models.CTX, &session_uuid)
-	if err != nil {
-		return c.JSON(http.StatusOK, echo.Map{
-			"message": "Failed to find user",
-			"user": nil,
-		})
-	}
+
+	user := ccu.User
 
 	// check if session expired
 	COOKIE_EXP_MINUTES := os.Getenv("COOKIE_EXP_MINUTES")
@@ -330,19 +319,9 @@ func whoami(c echo.Context) error {
 		signout(c)
 	}
 
-	roles, err := models.QUERIES.GetUserRoles(models.CTX, user.ID)
-	if err != nil {
-		return c.JSON(http.StatusOK, echo.Map{
-			"message": "Failed to find user",
-			"user": nil,
-			"roles": nil,
-		})
-	}
-
 	return c.JSON(http.StatusOK, echo.Map{
 		"message": "Found whoami",
 		"user": user,
-		"roles": roles,
 	})
 }
 
