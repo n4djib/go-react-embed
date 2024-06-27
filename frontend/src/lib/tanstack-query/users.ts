@@ -151,3 +151,22 @@ export const useInsertUser = ({ onSuccess, onError }: any) => {
     onError: defaultOnError,
   });
 };
+
+export const useRbacData = () => {
+  return useQuery({
+    queryKey: ["rbac-data"],
+    queryFn: async () => {
+      try {
+        const url = `${BACKEND_URL}/api/auth/get-rbac`;
+        const response = await fetch(url, { credentials: CREDENTIALS });
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.message);
+        }
+        return data;
+      } catch (error) {
+        throw error;
+      }
+    },
+  });
+};

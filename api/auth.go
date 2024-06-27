@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"go-react-embed/models"
 	"net/http"
 	"os"
@@ -39,7 +38,6 @@ func GetRBAC(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
-
 	roleParents, err := models.QUERIES.GetRoleParents(models.CTX)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
@@ -48,39 +46,38 @@ func GetRBAC(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
-
 	rolePermissions, err := models.QUERIES.GetRolePermissions(models.CTX)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	fmt.Println("-roles: ")
-	for i:=0; i<len(roles); i++ {
-		fmt.Println(" ", roles[i])
-	}
-	fmt.Println("")
-	fmt.Println("-permissions: ")
-	for i:=0; i<len(permissions); i++ {
-		fmt.Println(" ", permissions[i])
-	}
-	fmt.Println("")
+	// fmt.Println("-roles: ")
+	// for i:=0; i<len(roles); i++ {
+	// 	fmt.Println(" ", roles[i])
+	// }
+	// fmt.Println("")
+	// fmt.Println("-permissions: ")
+	// for i:=0; i<len(permissions); i++ {
+	// 	fmt.Println(" ", permissions[i])
+	// }
+	// fmt.Println("")
 	
-	fmt.Println("-roleParents: ")
-	for i:=0; i<len(roleParents); i++ {
-		fmt.Println(" ", roleParents[i])
-	}
-	fmt.Println("")
-	fmt.Println("-permissionParents: ")
-	for i:=0; i<len(permissionParents); i++ {
-		fmt.Println(" ", permissionParents[i])
-	}
-	fmt.Println("")
+	// fmt.Println("-roleParents: ")
+	// for i:=0; i<len(roleParents); i++ {
+	// 	fmt.Println(" ", roleParents[i])
+	// }
+	// fmt.Println("")
+	// fmt.Println("-permissionParents: ")
+	// for i:=0; i<len(permissionParents); i++ {
+	// 	fmt.Println(" ", permissionParents[i])
+	// }
+	// fmt.Println("")
 
-	fmt.Println("-rolePermissions: ")
-	for i:=0; i<len(rolePermissions); i++ {
-		fmt.Println(" ", rolePermissions[i])
-	}
-	fmt.Println("")
+	// fmt.Println("-rolePermissions: ")
+	// for i:=0; i<len(rolePermissions); i++ {
+	// 	fmt.Println(" ", rolePermissions[i])
+	// }
+	// fmt.Println("")
 
 	return c.JSON(http.StatusOK, echo.Map{
 		"roles": roles,
@@ -102,6 +99,15 @@ type ContextUser struct {
 type CustomContextUser struct {
 	echo.Context
 	User ContextUser
+}
+
+func (cu CustomContextUser) GetUser() ContextUser {
+	return cu.User
+}
+
+func GetUserFromContext(c echo.Context) ContextUser {
+	ccu := c.(*CustomContextUser)
+	return ccu.GetUser()
 }
 
 // middleware extends the context by adding the authenticated user
@@ -143,10 +149,11 @@ func WhoamiMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 // AuthenticatedMiddleware checks if token is valid
 func AuthenticatedMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ccu := c.(*CustomContextUser)
+		// ccu := c.(*CustomContextUser)
+		user := GetUserFromContext(c)
 
 		// check if authenticated
-		if ccu.User.ID == 0 {
+		if user.ID == 0 {
 		    return echo.NewHTTPError(http.StatusUnauthorized, "Not Authenticated")
 		}
 

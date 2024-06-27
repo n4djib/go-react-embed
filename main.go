@@ -128,14 +128,16 @@ func useCORSMiddleware(e *echo.Echo) {
 
 func pong(c echo.Context) error {
 	// testing authorization
-	ccu := c.(*api.CustomContextUser)
-	if ccu.User.ID == 0 {
+	// ccu := c.(*api.CustomContextUser)
+	ctxUser := api.GetUserFromContext(c)
+	if ctxUser.ID == 0 {
 		return echo.NewHTTPError(http.StatusUnauthorized, "Not Authenticated")
 	}
 	
 	user := rbac.Map{
-		"id": ccu.User.ID, "name": ccu.User.Name, 
-		"roles": ccu.User.Roles,
+		"id": ctxUser.ID, 
+		"name": ctxUser.Name, 
+		"roles": ctxUser.Roles,
 	}
 	resource := rbac.Map{"id": 3, "title": "tutorial", "owner": 3, "list": []int{1, 2, 3, 4, 5, 6}}
 

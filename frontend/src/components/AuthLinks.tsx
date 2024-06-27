@@ -24,6 +24,9 @@ const AuthLinks = () => {
     );
   }
 
+  // FIXME after cookie expiration, whoami return 401 but the links shows logged in
+  // i should show a spinner or just logout (not logout, just show the links)
+
   return (
     <div className="flex gap-2 items-center ml-auto">
       <Link to="/auth/signout" activeProps={activeProps}>

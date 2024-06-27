@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { useUserWhoami } from "../lib/tanstack-query/users";
+import { useRbacData, useUserWhoami } from "../lib/tanstack-query/users";
+import { RBAC } from "../lib/rbac";
 
 export type ContextUserType = {
   id: number;
@@ -18,6 +19,7 @@ type AuthContextType = {
   login: (userData: loginData) => void;
   logout: () => void;
   isLoading: boolean;
+  rbac: RBAC | null;
 };
 
 export const AuthContext = createContext<AuthContextType | undefined>(
@@ -34,7 +36,10 @@ export default function AuthContextProvider({
   children: React.ReactNode;
 }) {
   const [user, setUser] = useState<ContextUserType | null>(null);
+  const [rbac, setRbac] = useState<RBAC | null>(null);
+
   const { data: whoami, isLoading } = useUserWhoami();
+  const { data: rbacData, isLoading: rbacDataIsLoading } = useRbacData();
 
   useEffect(() => {
     if (whoami) {
@@ -46,6 +51,19 @@ export default function AuthContextProvider({
       setUser(user);
     }
   }, [whoami]);
+
+  useEffect(() => {
+    if (rbacDataIsLoading) return;
+
+    const rbacAutho = new RBAC();
+    rbacAutho.SetRoles(rbacData.roles);
+    rbacAutho.SetPermissions(rbacData.permissions);
+    rbacAutho.SetRoleParents(rbacData.roleParents);
+    rbacAutho.SetPermissionParents(rbacData.permissionParents);
+    rbacAutho.SetRolePermissions(rbacData.rolePermissions);
+
+    setRbac(rbacAutho);
+  }, [rbacData]);
 
   const login = async (data: loginData) => {
     try {
@@ -89,7 +107,7 @@ export default function AuthContextProvider({
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ user, rbac, isLoading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
