@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useRbacData, useUserWhoami } from "../lib/tanstack-query/users";
-import { RBAC } from "../lib/rbac";
+import { RBAC } from "../lib/rbac/rbac";
 
 export type ContextUserType = {
   id: number;
@@ -56,6 +56,23 @@ export default function AuthContextProvider({
     if (rbacDataIsLoading) return;
 
     const rbacAutho = new RBAC();
+
+    const evalEngine = rbacAutho.GetEvalEngine();
+    evalEngine.SetRuleCode(`
+      return %s;
+    `);
+    // evalEngine.SetOtherCode(`
+    //   function listHasValue(lst, val) {
+    //     var values = Object.values(lst);
+    //     for(var i = 0; i < values.length; i++){
+    //       if(values[i] === val) {
+    //         return true;
+    //       }
+    //     }
+    //     return false;
+    //   }
+    // `);
+
     rbacAutho.SetRoles(rbacData.roles);
     rbacAutho.SetPermissions(rbacData.permissions);
     rbacAutho.SetRoleParents(rbacData.roleParents);

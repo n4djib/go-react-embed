@@ -1,30 +1,19 @@
-export type UserWithRoles = {
-  roles: string[];
-} & {
-  [key: string]: any;
-};
+import { DefaultEngine } from "./engine";
+import {
+  Permission,
+  PermissionParent,
+  Role,
+  RoleParent,
+  RolePermission,
+  UserWithRoles,
+} from "./types";
+import { checkUserHasRole, permissionVisited, roleExists } from "./utils";
 
-type Role = {
-  id: number;
-  role: string;
-};
-type Permission = {
-  id: number;
-  permission: string;
-  rule: string;
-};
-type RoleParent = {
-  role_id: number;
-  parent_id: number;
-};
-type PermissionParent = {
-  permission_id: number;
-  parent_id: number;
-};
-type RolePermission = {
-  role_id: number;
-  permission_id: number;
-};
+export interface EvalEngine {
+  RunRule: (user: UserWithRoles, resource: object, rule: string) => boolean;
+  SetOtherCode: (code: string) => void;
+  SetRuleCode: (code: string) => void;
+}
 
 export class RBAC {
   roles: Role[];
@@ -32,13 +21,20 @@ export class RBAC {
   role_parents: RoleParent[];
   permission_parents: PermissionParent[];
   role_permissions: RolePermission[];
+  evalEngine: EvalEngine;
 
-  constructor() {
+  constructor(ee: EvalEngine | null = null) {
     this.roles = [];
     this.permissions = [];
     this.role_parents = [];
     this.permission_parents = [];
     this.role_permissions = [];
+
+    if (ee === null) {
+      this.evalEngine = new DefaultEngine();
+    } else {
+      this.evalEngine = ee;
+    }
   }
 
   SetRoles(roles: Role[]) {
@@ -55,6 +51,10 @@ export class RBAC {
   }
   SetRolePermissions(role_permissions: RolePermission[]) {
     this.role_permissions = role_permissions;
+  }
+
+  GetEvalEngine(): EvalEngine {
+    return this.evalEngine;
   }
 
   getRole(id: number) {
@@ -150,22 +150,17 @@ export class RBAC {
         console.log("- breaked at start.", child);
         return breaked;
       }
-
       if (permissionVisited(visitedPerissions, child)) {
         return false;
       }
-
       // check rule is true
-      const result = RunRule(user, resource, child.rule);
+      const result = _rbac.evalEngine.RunRule(user, resource, child.rule);
       if (result === false) {
         return false;
       }
-
       // const perm = child.id + ", " + child.permission + ", " + child.rule;
       // console.log("+ next:[" + perm + "]", result);
-
       visitedPerissions.push(child);
-
       // get roles related to permissions
       // if user has appropriate role we break
       let userRoles: string[] = [];
@@ -183,7 +178,6 @@ export class RBAC {
         breaked = true;
         return true;
       }
-
       // we next go to parents
       const parents = _rbac.getPermissionParents(child.id);
       for (let i = 0; i < parents.length; i++) {
@@ -221,82 +215,13 @@ export class RBAC {
       this.permissionsTraversal(user, resource, this);
 
     const allowed = nextInChainFunc(firstPermission);
-    // console.log("foundRoles:", foundRoles);
 
     const roles: Role[] = [];
     for (let i = 0; i < foundRoles.length; i++) {
       const child = foundRoles[i];
       this.getParentRolesLoop(roles, child);
     }
-    // console.log("roles:", roles);
 
     return allowed;
   }
-}
-
-//
-//
-//
-//
-
-function roleExists(roles: Role[], role: Role): boolean {
-  for (let i = 0; i < roles.length; i++) {
-    if (roles[i].id === role.id) {
-      return true;
-    }
-  }
-  return false;
-}
-
-function permissionVisited(
-  permissions: Permission[],
-  permission: Permission
-): boolean {
-  for (let i = 0; i < permissions.length; i++) {
-    const current = permissions[i];
-    if (current.id == permission.id) {
-      return true;
-    }
-  }
-  return false;
-}
-
-function checkUserHasRole(userRoles: string[], roles: Role[]): boolean {
-  for (let i = 0; i < roles.length; i++) {
-    for (let j = 0; j < userRoles.length; j++) {
-      if (roles[i].role === userRoles[j]) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
-const otherCode = `
-function listHasValue(obj, val) {
-	var values = Object.values(obj);
-	for(var i = 0; i < values.length; i++){
-		if(values[i] === val) {
-			return true;
-		}
-	}
-	return false;
-}
-`;
-export function RunRule(user: object, resource: object, rule: string): boolean {
-  if (rule.trim() === "") return true;
-
-  // evaluate rule
-  const defaultRuleCode = `
-    return ${rule};
-  `;
-  const ruleFunc = new Function(
-    "user",
-    "resource",
-    otherCode + defaultRuleCode
-  );
-  const result = ruleFunc(user, resource);
-  return result;
-
-  // return false;
 }
