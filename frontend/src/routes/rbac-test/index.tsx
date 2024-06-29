@@ -29,7 +29,12 @@ function Index() {
     };
     const resource = { id: 3, owner: 3 };
 
+    const date1 = new Date().getTime() / 1000;
     const allowed = rbac.IsAllowed(user, resource, "edit_user");
+    const date2 = new Date().getTime() / 1000;
+
+    const diff = date2 - date1;
+    console.log("duration [ms]:", diff);
 
     console.log("allowed:", allowed);
     console.log(" ");

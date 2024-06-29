@@ -6,8 +6,10 @@ import {
   RoleParent,
   RolePermission,
   UserWithRoles,
+  PermissionsMap,
+  RolesMap,
 } from "./types";
-import { checkUserHasRole, permissionVisited, roleExists } from "./utils";
+import { checkUserHasRole, roleExist } from "./utils";
 
 export interface EvalEngine {
   RunRule: (user: UserWithRoles, resource: object, rule: string) => boolean;
@@ -129,28 +131,42 @@ export class RBAC {
     return null;
   }
 
-  getParentRolesLoop(roles: Role[], child: Role) {
-    if (roleExists(roles, child)) {
-      return;
+  collectRoles(foundRoles: RolesMap): Role[] {
+    const roles: Role[] = [];
+    const _rbac = this;
+
+    function dfs(child: Role) {
+      if (roleExist(roles, child)) {
+        return;
+      }
+      roles.push(child);
+      const parents = _rbac.getRoleParents(child.id);
+      for (let i = 0; i < parents.length; i++) {
+        dfs(parents[i]);
+      }
     }
-    roles.push(child);
-    const parents = this.getRoleParents(child.id);
-    for (let i = 0; i < parents.length; i++) {
-      this.getParentRolesLoop(roles, parents[i]);
+    for (const key in foundRoles) {
+      const child = foundRoles[key];
+      dfs(child);
     }
+    return roles;
   }
 
-  permissionsTraversal(user: UserWithRoles, resource: object, _rbac: RBAC) {
-    const visitedPerissions: Permission[] = [];
-    const foundRoles: Role[] = [];
+  hasPermission(
+    user: UserWithRoles,
+    resource: object,
+    firstPermission: Permission
+  ) {
+    const visitedPerissions: PermissionsMap = {};
+    const foundRoles: RolesMap = {};
     let breaked = false;
+    const _rbac = this;
 
-    const closureFunc = function (child: Permission): boolean {
+    function dfs(child: Permission): boolean {
       if (breaked) {
-        console.log("- breaked at start.", child);
         return breaked;
       }
-      if (permissionVisited(visitedPerissions, child)) {
+      if (child.id in visitedPerissions) {
         return false;
       }
       // check rule is true
@@ -160,20 +176,20 @@ export class RBAC {
       }
       // const perm = child.id + ", " + child.permission + ", " + child.rule;
       // console.log("+ next:[" + perm + "]", result);
-      visitedPerissions.push(child);
+
+      visitedPerissions[child.id] = child;
+
       // get roles related to permissions
       // if user has appropriate role we break
-      let userRoles: string[] = [];
-      if (user.hasOwnProperty("roles")) {
-        userRoles = user.roles;
-      }
       const roles = _rbac.getPermissionRoles(child.id);
       for (let i = 0; i < roles.length; i++) {
-        if (!roleExists(foundRoles, roles[i])) {
-          foundRoles.push(roles[i]);
-        }
+        // if (!foundRoles.hasOwnProperty(roles[i].id)) {
+        const role = roles[i];
+        foundRoles[role.id] = role;
+        // }
       }
-      const hasRole = checkUserHasRole(userRoles, roles);
+
+      const hasRole = checkUserHasRole(user.roles, roles);
       if (hasRole) {
         breaked = true;
         return true;
@@ -185,12 +201,13 @@ export class RBAC {
           console.log("- breaked in loop.", parents[i]);
           return true;
         }
-        closureFunc(parents[i]);
+        dfs(parents[i]);
       }
       return breaked;
-    };
+    }
 
-    return { closureFunc, foundRoles };
+    const allowed = dfs(firstPermission);
+    return { allowed, foundRoles };
   }
 
   IsAllowed(
@@ -211,17 +228,20 @@ export class RBAC {
       return false;
     }
 
-    const { closureFunc: nextInChainFunc, foundRoles } =
-      this.permissionsTraversal(user, resource, this);
+    const { allowed, foundRoles } = this.hasPermission(
+      user,
+      resource,
+      firstPermission
+    );
 
-    const allowed = nextInChainFunc(firstPermission);
+    const roles = this.collectRoles(foundRoles);
 
-    const roles: Role[] = [];
-    for (let i = 0; i < foundRoles.length; i++) {
-      const child = foundRoles[i];
-      this.getParentRolesLoop(roles, child);
+    if (allowed === false) {
+      // check again if user has role if breaked allowed is false
+      const hasRole = checkUserHasRole(user.roles, roles);
+      return hasRole;
+    } else {
+      return allowed;
     }
-
-    return allowed;
   }
 }

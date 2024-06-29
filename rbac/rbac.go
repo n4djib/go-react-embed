@@ -126,64 +126,95 @@ func (rbac rbac) getPermissionRoles(id int64) []Role {
 	return roles
 }
 
-func (rbac rbac) getParentRolesLoop(roles *[]Role, child Role) {
-	if roleExist(*roles, child) {
-		return
-	}
-	*roles = append(*roles, child)
-	parents := rbac.getRoleParents(child.ID)
-	for _, parent := range parents {
-		rbac.getParentRolesLoop(roles, parent)
-	}
-}
+// func (rbac rbac) getParentRolesLoop(roles *[]Role, child Role) {
+// 	if roleExist(*roles, child) {
+// 		return
+// 	}
+// 	*roles = append(*roles, child)
+// 	parents := rbac.getRoleParents(child.ID)
+// 	for _, parent := range parents {
+// 		rbac.getParentRolesLoop(roles, parent)
+// 	}
+// }
 
-func (rbac rbac) getNextInChain(user Map, resource Map, permissions []Permission, child Permission) ([]Permission, []Role, bool){
-	// check child not in permissions 
-	if permissionExist(permissions, child) {
-		return []Permission{}, []Role{}, false
-	}
 
-	rule := strings.TrimSpace(child.Rule)
-	result, err := rbac.evalEngine.RunRule(user, resource, rule)
-	if err != nil {
-		fmt.Println("+++ Error in Run Rule: ", err.Error())
-		return []Permission{}, []Role{}, false
-	}
-	if !result {
-		return []Permission{}, []Role{}, false
-	}
+func (rbac rbac) collectRoles(foundRoles RolesMap) []Role {
+    roles := []Role{}
 
-	// fmt.Println("+ nextInChain:", child, result)
-	
-	permissions = append(permissions, child)
-	
-	// if user has appropriate role we break
-	roles := rbac.getPermissionRoles(child.ID)
-	userRoles := user["roles"].([]string)
-	hasRole := checkUserHasRole(userRoles, roles)
-	if hasRole {
-		// fmt.Println("++ breaking,", child.Permission)
-		return permissions, roles, true
-	}
+	var dfs func(child Role)
+    dfs = func(child Role) {
+      if roleExist(roles, child) {
+        return;
+      }
+      roles = append(roles, child)
+      parents := rbac.getRoleParents(child.ID);
+      for _, parent := range parents {
+        dfs(parent)
+      }
+    }
+    for key := range foundRoles {
+      child := foundRoles[key]
+      dfs(child)
+    }
+    return roles
+  }
 
-	parents := rbac.getPermissionParents(child.ID)
-	for _, current := range parents {
-		// FIXME why are we checking existance here 
-		// let it be checked in the recursion
-		parentPermissionExist := permissionExist(permissions, current)
-		if !parentPermissionExist {
-			newPermission , newRoles, breaked := rbac.getNextInChain(user, resource, permissions, current)
-			permissions = append(permissions, newPermission...)
-			roles = append(roles, newRoles...)
+func (rbac rbac) hasPermission(user Map, resource Map, firstPermission Permission) (bool, RolesMap) {
+	visitedPerissions := make(PermissionsMap)
+    foundRoles := make(RolesMap)
+    breaked := false
 
-			if breaked {
-				return permissions, roles, true
-			}
+	var dfs func(child Permission) bool
+	dfs = func(child Permission) bool {
+		if breaked {
+		  return breaked
 		}
+		if _, ok := visitedPerissions[child.ID]; ok {
+			return false;
+		}
+		// check rule is true
+		rule := strings.TrimSpace(child.Rule)
+		result, err := rbac.evalEngine.RunRule(user, resource, rule)
+		if err != nil {
+			fmt.Println("+++ Error in Run Rule: ", err.Error())
+			return false
+		}
+		if !result {
+			return false
+		}
+		// fmt.Println("+ next:", child, result)
+		visitedPerissions[child.ID] = child
+		
+		// get roles related to permissions
+		// if user has appropriate role we break
+		roles := rbac.getPermissionRoles(child.ID)
+		for _, role := range roles {
+			foundRoles[role.ID] = role
+		}
+
+		userRoles := user["roles"].([]string)
+		hasRole := checkUserHasRole(userRoles, roles)
+		if hasRole {
+			// fmt.Println("++ breaking,", child.Permission)
+        	breaked = true
+			return true
+		}
+		// we next go to parents
+		parents := rbac.getPermissionParents(child.ID)
+		for _, parent := range parents {
+			if breaked {
+			//   fmt.Println("++ breaking,", parent.Permission)
+			  return true
+			}
+			dfs(parent)
+		}
+		return breaked
 	}
 
-	return permissions, roles, false
+	allowed := dfs(firstPermission)
+	return allowed, foundRoles
 }
+
 func (rbac rbac) IsAllowed(user Map, resource Map, permission string) (bool, error) {
 	// check the permission exist
 	var startingPermission Permission
@@ -214,21 +245,16 @@ func (rbac rbac) IsAllowed(user Map, resource Map, permission string) (bool, err
 		return false, nil
 	}
 
-
-	// travers the graph
-	var permissions []Permission
-	_, foundRoles, _ := rbac.getNextInChain(user, resource, permissions, startingPermission)
-	
+	allowed, foundRoles := rbac.hasPermission(user, resource, startingPermission)
 	// fmt.Println("foundRoles:::", foundRoles)
 
-	// get parent roles
-	roles := []Role{}
-	for _, child := range foundRoles {
-		rbac.getParentRolesLoop(&roles, child)
-	}
+	roles := rbac.collectRoles(foundRoles)
 	// fmt.Println("roles:::", roles)
 
-	// final return
-	allowed := checkUserHasRole(userRoles, roles)
+	if !allowed {
+		// check again if user has role if breaked allowed is false
+		hasRole := checkUserHasRole(userRoles, roles)
+		allowed = hasRole
+	}
 	return allowed, nil
 }

@@ -29,3 +29,11 @@ export type RolePermission = {
   role_id: number;
   permission_id: number;
 };
+
+export type PermissionsMap = {
+  [key: number]: Permission;
+};
+
+export type RolesMap = {
+  [key: number]: Role;
+};

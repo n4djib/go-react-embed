@@ -23,7 +23,6 @@ export class DefaultEngine implements EvalEngine {
 
     // generate rule code
     const script = this.ruleCode.replace("%s", rule);
-
     const ruleFunc = new Function("user", "resource", this.otherCode + script);
     const result = ruleFunc(user, resource);
     return result;

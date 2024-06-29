@@ -57,10 +57,10 @@ export default function AuthContextProvider({
 
     const rbacAutho = new RBAC();
 
-    const evalEngine = rbacAutho.GetEvalEngine();
-    evalEngine.SetRuleCode(`
-      return %s;
-    `);
+    // const evalEngine = rbacAutho.GetEvalEngine();
+    // evalEngine.SetRuleCode(`
+    //   return %s;
+    // `);
     // evalEngine.SetOtherCode(`
     //   function listHasValue(lst, val) {
     //     var values = Object.values(lst);
