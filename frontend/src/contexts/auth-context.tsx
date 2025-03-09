@@ -27,6 +27,7 @@ export const AuthContext = createContext<AuthContextType | undefined>(
 );
 
 // FIXME how to use ENV of Golang
+// fill ENV in system from GO and consume them in React
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const CREDENTIALS = import.meta.env.VITE_CREDENTIALS;
 

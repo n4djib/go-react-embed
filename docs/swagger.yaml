@@ -2,7 +2,7 @@ definitions:
   api.PokemonResult:
     properties:
       result:
-        $ref: '#/definitions/models.Pokemon'
+        $ref: "#/definitions/models.Pokemon"
     type: object
   models.Pokemon:
     properties:
@@ -24,16 +24,16 @@ paths:
     get:
       description: List all pokemons (limit & offset)
       parameters:
-      - description: 'Limit: default 10'
-        in: query
-        name: limit
-        type: integer
-      - description: 'Offset: default 0'
-        in: query
-        name: offset
-        type: integer
+        - description: "Limit: default 10"
+          in: query
+          name: limit
+          type: integer
+        - description: "Offset: default 0"
+          in: query
+          name: offset
+          type: integer
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: ok
@@ -41,43 +41,43 @@ paths:
             type: string
       summary: Get All Pokemons
       tags:
-      - Pokemons
+        - Pokemons
   /api/pokemons/{id}:
     get:
       description: get pokemon by ID as param path
       parameters:
-      - description: ID of a pokemon
-        in: path
-        name: id
-        required: true
-        type: integer
+        - description: ID of a pokemon
+          in: path
+          name: id
+          required: true
+          type: integer
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/api.PokemonResult'
+            $ref: "#/definitions/api.PokemonResult"
       summary: Get Pokemon by ID
       tags:
-      - Pokemons
+        - Pokemons
   /api/pokemons/name/{name}:
     get:
       description: get pokemon by Name as param path
       parameters:
-      - description: Name of a pokemon
-        in: path
-        name: name
-        required: true
-        type: string
+        - description: Name of a pokemon
+          in: path
+          name: name
+          required: true
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/api.PokemonResult'
+            $ref: "#/definitions/api.PokemonResult"
       summary: Get Pokemon by Name
       tags:
-      - Pokemons
+        - Pokemons
 swagger: "2.0"

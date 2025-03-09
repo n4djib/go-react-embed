@@ -5,6 +5,17 @@ import "github.com/go-playground/validator/v10"
 // Initialize validator
 var validate = validator.New()
 
+
+
+
+
+
+
+
+
+
+
+
 // type Data struct {
 // 	Message string `json:"message"`
 // 	Data interface{} `json:"data"`

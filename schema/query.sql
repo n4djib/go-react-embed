@@ -1,7 +1,8 @@
 -- name: GetUser :one
 SELECT id, name, is_active, session, logged_at, created_at
   FROM users WHERE id = ? LIMIT 1;
-
+  -- // FIXME error warnning
+  
 -- name: GetUserByName :one
 SELECT id, name, is_active, session, logged_at, created_at
   FROM users WHERE name = ? LIMIT 1;

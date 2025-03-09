@@ -1,7 +1,10 @@
 package api
 
 import (
+	"context"
+	"database/sql"
 	"go-react-embed/models"
+	"go-react-embed/rbac"
 	"net/http"
 	"os"
 	"strconv"
@@ -12,15 +15,22 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func RegisterAuthsHandlers(e *echo.Group) {
-	e.POST("/auth/signup", signup)
-	e.POST("/auth/signin", signin)
-	e.GET("/auth/signout", signout)
-	e.GET("/auth/whoami", whoami)
-	e.PUT("/auth/active-state", updateUserActiveStateHandler)
-	e.GET("/auth/check-name/:name", checkUsername)
+type AuthHandler struct {
+	CTX     context.Context
+	QUERIES *models.Queries
+	DB      *sql.DB
+	RBAC    rbac.RBAC
+}
+
+func (h AuthHandler) RegisterHandlers(e *echo.Group) {
+	e.POST("/auth/signup", h.signup)
+	e.POST("/auth/signin", h.signin)
+	e.GET("/auth/signout", h.signout)
+	e.GET("/auth/whoami", h.whoami)
+	e.PUT("/auth/active-state", h.updateUserActiveStateHandler)
+	e.GET("/auth/check-name/:name", h.checkUsername)
 	
-	e.GET("/auth/get-rbac", GetRBAC)
+	e.GET("/auth/get-rbac", h.GetRBAC)
 
 	// TODO forgoten password
 	// TODO change password
@@ -29,24 +39,24 @@ func RegisterAuthsHandlers(e *echo.Group) {
 	// TODO limit signup tries
 }
 
-func GetRBAC(c echo.Context) error {
-	roles, err := models.QUERIES.GetRoles(models.CTX)
+func (h AuthHandler) GetRBAC(c echo.Context) error {
+	roles, err := h.QUERIES.GetRoles(h.CTX)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
-	permissions, err := models.QUERIES.GetPermissions(models.CTX)
+	permissions, err := h.QUERIES.GetPermissions(h.CTX)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
-	roleParents, err := models.QUERIES.GetRoleParents(models.CTX)
+	roleParents, err := h.QUERIES.GetRoleParents(h.CTX)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
-	permissionParents, err := models.QUERIES.GetPermissionParents(models.CTX)
+	permissionParents, err := h.QUERIES.GetPermissionParents(h.CTX)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
-	rolePermissions, err := models.QUERIES.GetRolePermissions(models.CTX)
+	rolePermissions, err := h.QUERIES.GetRolePermissions(h.CTX)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
@@ -111,7 +121,7 @@ func GetUserFromContext(c echo.Context) ContextUser {
 }
 
 // middleware extends the context by adding the authenticated user
-func WhoamiMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+func (h AuthHandler) WhoamiMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ccu := &CustomContextUser{c, ContextUser{}}
 
@@ -120,7 +130,7 @@ func WhoamiMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 			return next(ccu)
 		}
 		session_uuid := cookie.Value  // uuid
-		user, err := models.QUERIES.GetUserBySession(models.CTX, &session_uuid)
+		user, err := h.QUERIES.GetUserBySession(h.CTX, &session_uuid)
 		if err != nil {
 			return next(ccu)
 		}
@@ -128,7 +138,7 @@ func WhoamiMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		// TODO check session expiration
 
 		// get user roles
-		roles, _ := models.QUERIES.GetUserRoles(models.CTX, user.ID)
+		roles, _ := h.QUERIES.GetUserRoles(h.CTX, user.ID)
 		// if err != nil {
 		// 	return echo.NewHTTPError(http.StatusInternalServerError, "Failed to find roles, " + err.Error())
 		// }
@@ -161,9 +171,9 @@ func AuthenticatedMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-func checkUsername(c echo.Context) error {
+func (h AuthHandler) checkUsername(c echo.Context) error {
 	name := c.Param("name")
-	_, err := models.QUERIES.GetUserByName(models.CTX, name)
+	_, err := h.QUERIES.GetUserByName(h.CTX, name)
 	if err != nil {
 		return c.JSON(http.StatusOK, echo.Map{
 			"message": "this name is available",
@@ -176,7 +186,7 @@ func checkUsername(c echo.Context) error {
 	})
 }
 
-func signup(c echo.Context) error {
+func (h AuthHandler) signup(c echo.Context) error {
 	var body models.CreateUserParams
 	if err := c.Bind(&body); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "bad request")
@@ -186,7 +196,7 @@ func signup(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "failed to validate, " + err.Error())
 	}
 	// check user name doesn't exist
-	foundUser, err := models.QUERIES.GetUserByName(models.CTX, body.Name)
+	foundUser, err := h.QUERIES.GetUserByName(h.CTX, body.Name)
 	if err != nil && err.Error() != "sql: no rows in result set" {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
@@ -208,7 +218,7 @@ func signup(c echo.Context) error {
 	body.CreatedAt = &loggedAt
 
 	// insert it
-	user, err := models.QUERIES.CreateUser(models.CTX, body)
+	user, err := h.QUERIES.CreateUser(h.CTX, body)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to insert")
 	}
@@ -226,7 +236,7 @@ func hashPassword(str string) (string, error) {
 	return string(hash), nil
 }
 
-func signin(c echo.Context) error {
+func (h AuthHandler) signin(c echo.Context) error {
 	var body models.CreateUserParams
 	if err := c.Bind(&body); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "bad request")
@@ -237,7 +247,7 @@ func signin(c echo.Context) error {
 	}
 
 	// check user name exist
-	user, err := models.QUERIES.GetUserByNameWithPassword(models.CTX, body.Name)
+	user, err := h.QUERIES.GetUserByNameWithPassword(h.CTX, body.Name)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "user name or password are incorrect")
 	}
@@ -263,7 +273,7 @@ func signin(c echo.Context) error {
 	updateSession.LoggedAt = &loggedAt
 
 	// put session in user table
-	err = models.QUERIES.UpdateUserSession(models.CTX, updateSession)
+	err = h.QUERIES.UpdateUserSession(h.CTX, updateSession)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to update")
 	}
@@ -284,7 +294,7 @@ func signin(c echo.Context) error {
 	// set cookies
 	c.SetCookie(cookie)
 
-	roles, err := models.QUERIES.GetUserRoles(models.CTX, user.ID)
+	roles, err := h.QUERIES.GetUserRoles(h.CTX, user.ID)
 	if err != nil {
 		return c.JSON(http.StatusOK, echo.Map{
 			"message": "Failed to find user",
@@ -302,7 +312,7 @@ func signin(c echo.Context) error {
 	})
 }
 
-func whoami(c echo.Context) error {
+func (h AuthHandler) whoami(c echo.Context) error {
 	ccu := c.(*CustomContextUser)
 	if ccu.User.ID == 0 {
 		return echo.NewHTTPError(http.StatusUnauthorized, "Not Authenticated")
@@ -323,7 +333,7 @@ func whoami(c echo.Context) error {
 	expiration := user.LoggedAt.Add(time.Minute * time.Duration(expMinutes))
 
 	if expiration.Before(time.Now()) {
-		signout(c)
+		h.signout(c)
 	}
 
 	return c.JSON(http.StatusOK, echo.Map{
@@ -332,7 +342,7 @@ func whoami(c echo.Context) error {
 	})
 }
 
-func signout(c echo.Context) error {
+func (h AuthHandler) signout(c echo.Context) error {
 	cookie, err := c.Cookie("Authorization")
 	if err != nil {
 		return c.JSON(http.StatusOK, echo.Map{
@@ -341,7 +351,7 @@ func signout(c echo.Context) error {
 	}
 
 	session_uuid := cookie.Value
-	user, err := models.QUERIES.GetUserBySession(models.CTX, &session_uuid)
+	user, err := h.QUERIES.GetUserBySession(h.CTX, &session_uuid)
 	if err != nil {
 		return c.JSON(http.StatusOK, echo.Map{
 			"message": "Already Signed out",
@@ -354,7 +364,7 @@ func signout(c echo.Context) error {
 	emptySession.Session = nil
 	emptySession.LoggedAt = user.LoggedAt
 
-	err = models.QUERIES.UpdateUserSession(models.CTX, emptySession)
+	err = h.QUERIES.UpdateUserSession(h.CTX, emptySession)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to remove session, " + err.Error())
 	}
@@ -385,7 +395,7 @@ func createCookie(name string, value string, timeHoursExpiry time.Time) *http.Co
 	return cookie
 }
 
-func updateUserActiveStateHandler(c echo.Context) error {
+func (h AuthHandler) updateUserActiveStateHandler(c echo.Context) error {
 	var body models.UpdateUserActiveStateParams
 	if err := c.Bind(&body); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "bad request")
@@ -394,7 +404,7 @@ func updateUserActiveStateHandler(c echo.Context) error {
 	if err := validate.Struct(body); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "failed to validate, " + err.Error())
 	}
-	_, err := models.QUERIES.UpdateUserActiveState(models.CTX, body)
+	_, err := h.QUERIES.UpdateUserActiveState(h.CTX, body)
 	if err != nil && err.Error() != "sql: no rows in result set" {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}

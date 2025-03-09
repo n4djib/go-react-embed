@@ -18,6 +18,10 @@ export type Pokemon = {
   image: string;
 };
 
+// TODO use : openapi-typescript  to get the types from OpenSwagger 3.0
+// frontend>  npm i -D openapi-typescript typescript
+// frontend>  npx openapi-typescript ./path/to/my/schema.yaml -o ./path/to/my/schema.d.ts
+
 type PokemonResult = {
   result: Pokemon;
 };

@@ -3,7 +3,6 @@ package rbac
 import (
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/dop251/goja"
 	// "github.com/dop251/goja_nodejs/console"
@@ -77,7 +76,7 @@ func (ee *GojaEvalEngine) RunRule(user Map, resource Map, rule string) (bool, er
 	// Retrieve the JavaScript function as a goja.Callable object
 	ruleFunc, ok := goja.AssertFunction(ee.vm.Get(functionName))
 	if !ok {
-		log.Fatalf("rule is not a function")
+		fmt.Println("rule is not a function")
 	}
 
 	// Call the JavaScript function with arguments
@@ -85,7 +84,7 @@ func (ee *GojaEvalEngine) RunRule(user Map, resource Map, rule string) (bool, er
 	r := ee.vm.ToValue(resource)
 	res, err := ruleFunc(goja.Undefined(), u, r)
 	if err != nil {
-		log.Fatalf("Error calling function: %v", err)
+		fmt.Println("Error calling function: %v", err)
 	}
 	
 	result := res.ToBoolean()

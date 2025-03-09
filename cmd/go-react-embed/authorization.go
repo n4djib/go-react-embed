@@ -1,16 +1,13 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"go-react-embed/models"
 	"go-react-embed/rbac"
 )
 
-var (
-	RBAC rbac.RBAC
-)
-
-func getRbacData() (
+func getRbacData(ctx context.Context, queries *models.Queries) (
 	[]models.GetRolesRow, 
 	[]models.GetPermissionsRow,
 	[]models.RoleParent,
@@ -18,38 +15,34 @@ func getRbacData() (
 	[]models.RolePermission,
 	error,
 ) {
-	roles, err := models.QUERIES.GetRoles(models.CTX)
+	roles, err := queries.GetRoles(ctx)
 	if err != nil {
 		return nil, nil, nil, nil, nil, err
 	}
-	permissions, err := models.QUERIES.GetPermissions(models.CTX)
+	permissions, err := queries.GetPermissions(ctx)
 	if err != nil {
 		return nil, nil, nil, nil, nil, err
 	}
-	roleParents, err := models.QUERIES.GetRoleParents(models.CTX)
+	roleParents, err := queries.GetRoleParents(ctx)
 	if err != nil {
 		return nil, nil, nil, nil, nil, err
 	}
-	permissionParents, err := models.QUERIES.GetPermissionParents(models.CTX)
+	permissionParents, err := queries.GetPermissionParents(ctx)
 	if err != nil {
 		return nil, nil, nil, nil, nil, err
 	}
-	rolePermissions, err := models.QUERIES.GetRolePermissions(models.CTX)
+	rolePermissions, err := queries.GetRolePermissions(ctx)
 	if err != nil {
 		return nil, nil, nil, nil, nil, err
 	}
 	return roles, permissions, roleParents, permissionParents, rolePermissions, nil
 }
 
-func setupRBAC() (rbac.RBAC, error) {
+// func setupRBAC(ctx context.Context, queries *models.Queries) (rbac.RBAC, error) {
+func setupRBAC(ctx context.Context, queries *models.Queries) (rbac.RBAC, error) {
 	rbacAuth := rbac.New()
 
-	roles, 
-	permissions, 
-	roleParents, 
-	permissionParents, 
-	rolePermissions, 
-	err := getRbacData()
+	roles, permissions, roleParents, permissionParents, rolePermissions, err := getRbacData(ctx, queries)
 	if err != nil {
 		return nil, err
 	}

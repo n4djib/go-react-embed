@@ -1,128 +1,116 @@
 {
-    "swagger": "2.0",
-    "info": {
-        "description": "this is the API for the backend.",
-        "title": "GO-REACT-EMBED API",
-        "termsOfService": "http://swagger.io/terms/",
-        "contact": {},
-        "version": "1.0"
-    },
-    "paths": {
-        "/api/pokemons": {
-            "get": {
-                "description": "List all pokemons (limit \u0026 offset)",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Pokemons"
-                ],
-                "summary": "Get All Pokemons",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Limit: default 10",
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Offset: default 0",
-                        "name": "offset",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "ok",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
+  "swagger": "2.0",
+  "info": {
+    "description": "this is the API for the backend.",
+    "title": "GO-REACT-EMBED API",
+    "termsOfService": "http://swagger.io/terms/",
+    "contact": {},
+    "version": "1.0"
+  },
+  "paths": {
+    "/api/pokemons": {
+      "get": {
+        "description": "List all pokemons (limit \u0026 offset)",
+        "produces": ["application/json"],
+        "tags": ["Pokemons"],
+        "summary": "Get All Pokemons",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "Limit: default 10",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "Offset: default 0",
+            "name": "offset",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ok",
+            "schema": {
+              "type": "string"
             }
-        },
-        "/api/pokemons/name/{name}": {
-            "get": {
-                "description": "get pokemon by Name as param path",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Pokemons"
-                ],
-                "summary": "Get Pokemon by Name",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Name of a pokemon",
-                        "name": "name",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/api.PokemonResult"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/pokemons/{id}": {
-            "get": {
-                "description": "get pokemon by ID as param path",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Pokemons"
-                ],
-                "summary": "Get Pokemon by ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "ID of a pokemon",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/api.PokemonResult"
-                        }
-                    }
-                }
-            }
+          }
         }
+      }
     },
-    "definitions": {
-        "api.PokemonResult": {
-            "type": "object",
-            "properties": {
-                "result": {
-                    "$ref": "#/definitions/models.Pokemon"
-                }
+    "/api/pokemons/name/{name}": {
+      "get": {
+        "description": "get pokemon by Name as param path",
+        "produces": ["application/json"],
+        "tags": ["Pokemons"],
+        "summary": "Get Pokemon by Name",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Name of a pokemon",
+            "name": "name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/api.PokemonResult"
             }
-        },
-        "models.Pokemon": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer"
-                },
-                "image": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                }
-            }
+          }
         }
+      }
+    },
+    "/api/pokemons/{id}": {
+      "get": {
+        "description": "get pokemon by ID as param path",
+        "produces": ["application/json"],
+        "tags": ["Pokemons"],
+        "summary": "Get Pokemon by ID",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "ID of a pokemon",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/api.PokemonResult"
+            }
+          }
+        }
+      }
     }
+  },
+  "definitions": {
+    "api.PokemonResult": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "$ref": "#/definitions/models.Pokemon"
+        }
+      }
+    },
+    "models.Pokemon": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "image": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    }
+  }
 }

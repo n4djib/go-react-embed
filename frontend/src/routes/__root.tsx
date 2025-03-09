@@ -35,9 +35,9 @@ export const Route = createRootRoute({
           <Link to="/buttons" activeProps={activeProps}>
             Buttons
           </Link>
-          <Link to="/rbac-test" activeProps={activeProps}>
+          {/* <Link to="/rbac-test" activeProps={activeProps}>
             RBAC
-          </Link>
+          </Link> */}
           {/* <Link to="/posts/1/edit" activeProps={activeProps}>
             Edit Post
           </Link> */}

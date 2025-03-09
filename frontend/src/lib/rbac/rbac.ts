@@ -151,7 +151,6 @@ export class RBAC {
     }
     return roles;
   }
-
   hasPermission(
     user: UserWithRoles,
     resource: object,
@@ -209,7 +208,6 @@ export class RBAC {
     const allowed = dfs(firstPermission);
     return { allowed, foundRoles };
   }
-
   IsAllowed(
     user: UserWithRoles,
     resource: object,

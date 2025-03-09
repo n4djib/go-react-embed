@@ -16,7 +16,7 @@ function Index() {
   const { user } = useAuth();
 
   const fetchData = async () => {
-    const response = await fetch(baseUrl + "/ping", {
+    const response = await fetch(baseUrl + "/api/ping", {
       credentials: CREDENTIALS,
     });
     const data = await response.text();

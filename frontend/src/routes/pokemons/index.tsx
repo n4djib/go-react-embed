@@ -11,7 +11,7 @@ import {
   List,
   ListItem,
   ListItemPrefix,
-  Avatar,
+  // Avatar,
   Card,
   Typography,
   IconButton,
@@ -75,12 +75,13 @@ function PokemonListItem({ pokemon }: { pokemon: Pokemon }) {
       <ListItem>
         <ListItemPrefix>
           {/* FIXME overflow is not working in firefox */}
-          <Avatar
+          {/* <Avatar
             variant="square"
             alt={pokemon.name}
             src={pokemon.image}
             className="overflow-visible "
-          />
+          /> */}
+          <img alt={pokemon.name} src={pokemon.image} height={50} width={50} />
         </ListItemPrefix>
         <div className="ml-4">
           <Typography variant="h6" color="blue-gray">

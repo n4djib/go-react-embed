@@ -6,7 +6,7 @@ tmp_dir = "tmp"
 args_bin = []
 # bin = "tmp\\main.exe"
 bin = "tmp\\main.exe -air true"
-cmd = "go build -o ./tmp/main.exe ."
+cmd = "go build -o ./tmp/main.exe ./cmd/go-react-embed"
 delay = 1000
 exclude_dir = [
     "assets",

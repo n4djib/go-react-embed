@@ -1,23 +1,33 @@
 package api
 
 import (
+	"context"
+	"database/sql"
 	"fmt"
 	"go-react-embed/models"
+	"go-react-embed/rbac"
 	"net/http"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
 
-func RegisterUsersHandlers(e *echo.Group) {
-	e.GET("/users", getUsersHandler, AuthenticatedMiddleware)
-	e.GET("/users/:id", getUserHandler)
-	e.GET("/users/name/:name", getUserByNameHandler)
-	e.PUT("/users", updateUserHandler)
-	e.DELETE("/users/:id", deleteUserHandler)
+type UserHandler struct {
+	CTX     context.Context
+	QUERIES *models.Queries
+	DB      *sql.DB
+	RBAC    rbac.RBAC
 }
 
-func getUsersHandler(c echo.Context) error {
+func (h UserHandler) RegisterHandlers(e *echo.Group) {
+	e.GET("/users", h.getUsersHandler, AuthenticatedMiddleware)
+	e.GET("/users/:id", h.getUserHandler)
+	e.GET("/users/name/:name", h.getUserByNameHandler)
+	e.PUT("/users", h.updateUserHandler)
+	e.DELETE("/users/:id", h.deleteUserHandler)
+}
+
+func (h UserHandler) getUsersHandler(c echo.Context) error {
 	ccu := c.(*CustomContextUser)
 	fmt.Println("-ccu:", ccu)
 	fmt.Println("-user:", ccu.User)
@@ -26,8 +36,7 @@ func getUsersHandler(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusUnauthorized, "Not Authenticated")
 	}
 
-
-	users, err := models.QUERIES.ListUsers(models.CTX)
+	users, err := h.QUERIES.ListUsers(h.CTX)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
@@ -37,13 +46,13 @@ func getUsersHandler(c echo.Context) error {
 	})
 }
 
-func getUserHandler(c echo.Context) error {
+func (h UserHandler) getUserHandler(c echo.Context) error {
 	param := c.Param("id")
 	id, err := strconv.ParseInt(param, 10, 64)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "id param must be integer")
 	}
-	user, err := models.QUERIES.GetUser(models.CTX, id)
+	user, err := h.QUERIES.GetUser(h.CTX, id)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusNotFound, "no rows in result set")
 	}
@@ -52,9 +61,9 @@ func getUserHandler(c echo.Context) error {
 	})
 }
 
-func getUserByNameHandler(c echo.Context) error {
+func (h UserHandler) getUserByNameHandler(c echo.Context) error {
 	name := c.Param("name")
-	user, err := models.QUERIES.GetUserByName(models.CTX, name)
+	user, err := h.QUERIES.GetUserByName(h.CTX, name)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusNotFound, "no rows in result set")
 	}
@@ -63,7 +72,7 @@ func getUserByNameHandler(c echo.Context) error {
 	})
 }
 
-func updateUserHandler(c echo.Context) error {
+func (h UserHandler) updateUserHandler(c echo.Context) error {
 	var body models.UpdateUserParams
 	if err := c.Bind(&body); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "bad request")
@@ -79,7 +88,7 @@ func updateUserHandler(c echo.Context) error {
 	}
 	body.Password = hash
 
-	user, err := models.QUERIES.UpdateUser(models.CTX, body)
+	user, err := h.QUERIES.UpdateUser(h.CTX, body)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to update, " + err.Error())
 	}
@@ -89,13 +98,13 @@ func updateUserHandler(c echo.Context) error {
 	})
 }
 
-func deleteUserHandler(c echo.Context) error {
+func (h UserHandler) deleteUserHandler(c echo.Context) error {
 	param := c.Param("id")
 	id, err := strconv.ParseInt(param, 10, 64)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "bad request")
 	}
-	err = models.QUERIES.DeleteUser(models.CTX, id)
+	err = h.QUERIES.DeleteUser(h.CTX, id)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "failed to delete " + err.Error())
 	}

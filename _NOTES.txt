@@ -103,7 +103,7 @@ go get github.com/google/uuid
 
 
 == swagger
-go install github.com/swaggo/swag/cmd/swag@latest
+go install github.com/swaggo/swag/cmd/swag@latest     (install somthing else  swag v3)
 
 swag init
 

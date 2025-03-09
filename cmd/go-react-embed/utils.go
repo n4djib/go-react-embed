@@ -3,14 +3,16 @@ package main
 import (
 	"context"
 	"database/sql"
-	"fmt"
-
-	_ "embed"
 	"errors"
+	"path"
+
 	"flag"
+	"fmt"
 	"go-react-embed/models"
+	"go-react-embed/schema"
 	"log"
 	"os"
+
 	"os/exec"
 	"runtime"
 
@@ -18,8 +20,6 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-//go:embed schema/schema.sql
-var ddl string
 
 func initAndLoadEnv() error {
 	_, err := os.Stat(".env.local")
@@ -39,34 +39,14 @@ func createENV(out string) error {
 APP_URL="https://localhost"
 APP_PORT="8080"
 DATABASE="./go-react-embed.db"
-SERVER_CRT="server.crt"
-SERVER_KEY="server.key"
+SERVER_CRT="tls-keys/server.crt"
+SERVER_KEY="tls-keys/server.key"
 COOKIE_EXP_MINUTES=1440    # 24h
 HIDE_BANNER=false
 `
 
 	fmt.Println("creating ", out)
 	return writeFile(out, CONTENT)
-}
-
-func initDatabaseModels() {
-	// connect to database
-	databaseFile := os.Getenv("DATABASE")
-	db, err := sql.Open("sqlite3", databaseFile)
-	if err != nil {
-		log.Fatal("Connection to DB error\n", err)
-	}
-	// createTables
-	ctx := context.Background()
-
-	// TODO i disabled table creation
-	// if _, err := db.ExecContext(ctx, ddl); err != nil {
-	// 	log.Fatal("Table Creation error\n", err)
-	// }
-
-	queries := models.New(db)
-	// assign to global variables in models package
-	models.DB, models.CTX, models.QUERIES = db, ctx, queries
 }
 
 func openBrowser() {
@@ -102,23 +82,24 @@ func openURL(url string) error {
 func checkSSLFilesExist(SERVER_CRT string, SERVER_KEY string) {
 	if _, err := os.Stat(SERVER_CRT); errors.Is(err, os.ErrNotExist) {
 		if err != nil {
-			log.Fatal("SERVER_CRT file not found\n", err)
+			log.Println("Error 1:", err)
 		}
-		fmt.Println("file ", SERVER_CRT, "not found")
 		err := createServerCRT(SERVER_CRT)
 		if err != nil {
-			log.Fatal("can't create create ServerCRT files\n", err)
+			log.Fatal("Can't create create Server.crt files\n", err)
 		}
+		fmt.Println("Created:", SERVER_CRT)
 	}
+
 	if _, err := os.Stat(SERVER_KEY); errors.Is(err, os.ErrNotExist) {
 		if err != nil {
-			log.Fatal("SERVER_KEY file not found\n", err)
+			log.Println("Error 2:", err)
 		}
-		fmt.Println("file ", SERVER_CRT, "not found")
 		err := createServerKEY(SERVER_KEY)
 		if err != nil {
-			log.Fatal("can't create create ServerCRT files\n", err)
+			log.Fatal("Can't create create Server.key files\n", err)
 		}
+		fmt.Println("Created:", SERVER_KEY)
 	}
 }
 
@@ -148,7 +129,7 @@ Gj4F4YoR78aZCS2ihk/I3yGH1LpfSlXnAEo4/JOPpsCOYImO2GwKgwbBVoGg+rQd
 xw==
 -----END CERTIFICATE-----`
 
-	fmt.Println("creating ", out)
+	// fmt.Println("Creating: ", out)
 	return writeFile(out, CONTENT)
 }
 
@@ -182,14 +163,41 @@ iSU8UKNGgQXBDkDhpo60TlItnpOSjVWl8hT2TGMi4IilkmRI4gO+faKlqd4lC9/m
 vRW5n/iormjNUUjBq2lv8uqt
 -----END PRIVATE KEY-----`
 
-	fmt.Println("creating ", out)
+ 	// fmt.Println("Creating: ", out)
 	return writeFile(out, CONTENT)
 }
 
+
+func initDatabaseModels() (*sql.DB, context.Context, *models.Queries) {
+	// connect to database
+	databaseFile := os.Getenv("DATABASE")
+	db, err := sql.Open("sqlite3", databaseFile)
+	if err != nil {
+		log.Fatal("Connection to DB error\n", err)
+	}
+	// createTables
+	ctx := context.Background()
+
+	// TODO i disabled table creation
+	// FIXME create role table
+	if _, err := db.ExecContext(ctx, schema.DDL); err != nil {
+		log.Fatal("Table Creation error\n", err)
+	}
+
+	queries := models.New(db)
+	return db, ctx, queries
+}
+
+
 func writeFile(out string, content string) error {
-	// create .env file
+	baseDir := path.Dir(out)
+	info, err := os.Stat(baseDir)
+    if err != nil || !info.IsDir() {
+		os.MkdirAll(baseDir, 0755)
+    }
+
 	f, err := os.Create(out)
-	fmt.Println("creating SERVER_CRT 3 ", out)
+	// fmt.Println("Creating file: ", out)
 	if err != nil {
 		return err
 	}
